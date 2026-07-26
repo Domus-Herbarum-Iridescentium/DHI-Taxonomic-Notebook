@@ -1,0 +1,3345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="ProjectLogo3.svg" type="image/svg">
+    <title>DHI Taxonomic Notebook v1.0.0 (presented by [虹蘅馆 Domus Herbārum Īridēscentium])</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js">
+    </script>
+    <style>
+        /* ===== 全局重置 & 布局 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                "PingFang SC",
+                "Hiragino Sans GB",
+                "Microsoft YaHei",
+                "Noto Sans SC",
+                "Helvetica Neue",
+                Arial,
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            display: flex;
+            height: 100vh;
+            background: #f6f8fa;
+            overflow: hidden;
+        }
+        :root {
+            --primary: #2c7a4a;
+            --primary-light: #e8f5e9;
+            --primary-hover: #1e5d36;
+            --border: #d0d7de;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --radius: 10px;
+            --bg-card: #ffffff;
+            --sidebar-width: 360px;
+            --card-min: 190px;
+        }
+
+        /* ===== 侧边栏 ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: 180px;
+            max-width: 600px;
+            background: #fff;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 14px 12px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
+            flex-shrink: 0;
+            height: 100vh;
+            position: relative;
+            transition: width 0.05s ease;
+        }
+        .sidebar-resizer {
+            position: absolute;
+            right: -4px;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            cursor: col-resize;
+            z-index: 10;
+            background: transparent;
+            transition: background 0.2s;
+        }
+        .sidebar-resizer:hover,
+        .sidebar-resizer.active {
+            background: rgba(44, 122, 74, 0.25);
+        }
+        .sidebar-resizer::after {
+            content: '';
+            position: absolute;
+            right: 2px;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #d0d7de;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .sidebar-resizer:hover::after,
+        .sidebar-resizer.active::after {
+            opacity: 1;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .sidebar-header h2 {
+            font-size: 1.15rem;
+            color: #1a2a3a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+        .sidebar-header h2 small {
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: #999;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 6px 0 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        .toolbar button {
+            padding: 4px 11px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: all 0.12s;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .toolbar button:hover {
+            background: #f0f2f5;
+            border-color: #b0b8c0;
+        }
+        .toolbar .btn-primary {
+            border-color: var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .toolbar .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        .toolbar .btn-primary.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .toolbar .btn-danger {
+            border-color: #d32f2f;
+            color: #d32f2f;
+        }
+        .toolbar .btn-danger:hover {
+            background: #fde8e8;
+        }
+
+        /* ===== 搜索框 ===== */
+        .search-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border 0.2s;
+            background: #fafbfc;
+        }
+        #searchInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 122, 74, 0.1);
+        }
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        .search-suggestions.active {
+            display: block;
+        }
+        .suggestion-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .suggestion-item:hover {
+            background: var(--primary-light);
+        }
+        .suggestion-item .badge {
+            background: #e8ecf0;
+            padding: 1px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            color: #555;
+        }
+        .suggestion-item .badge.species {
+            background: #dbeafe;
+            color: #1a56db;
+        }
+        .suggestion-item .badge.taxon {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* ===== 树 ===== */
+        .tree-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .tree-wrap ul {
+            list-style: none;
+            padding-left: 18px;
+        }
+        .tree-wrap>ul {
+            padding-left: 0;
+        }
+        .tree-wrap li {
+            margin: 1px 0;
+            user-select: none;
+            position: relative;
+        }
+        .tree-wrap li.sortable-chosen {
+            background: var(--primary-light);
+            border-radius: 6px;
+        }
+        .tree-wrap li.sortable-ghost {
+            opacity: 0.4;
+            background: #f0f2f5;
+        }
+        .sortable-drag {
+            cursor: grabbing !important;
+        }
+
+        .node-label {
+            cursor: pointer;
+            padding: 4px 7px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            transition: background 0.12s;
+            font-size: 0.88rem;
+            position: relative;
+        }
+        .node-label:hover {
+            background: #f0f4f8;
+        }
+        .node-label .arrow {
+            display: inline-block;
+            width: 16px;
+            font-size: 10px;
+            text-align: center;
+            transition: transform 0.2s;
+            color: #777;
+            flex-shrink: 0;
+        }
+        .node-label.expanded>.arrow {
+            transform: rotate(90deg);
+        }
+        .node-name {
+            flex: 1;
+            color: #1a2a3a;
+            word-break: break-word;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .node-name .type-tag {
+            font-size: 0.55rem;
+            background: #e8ecf0;
+            padding: 0 7px;
+            border-radius: 10px;
+            color: #666;
+            font-weight: 400;
+        }
+        .node-name .type-tag.species-tag {
+            background: #dbeafe;
+            color: #1a56db;
+        }
+        .node-name .type-tag.content-tag {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .node-actions {
+            display: none;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .node-label:hover .node-actions,
+        .edit-mode .node-actions {
+            display: flex;
+        }
+        .node-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 1px 4px;
+            border-radius: 4px;
+            color: #666;
+            transition: all 0.1s;
+        }
+        .node-actions button:hover {
+            background: #e8ecf0;
+            color: #1a2a3a;
+        }
+        .node-actions .del-btn:hover {
+            background: #fde8e8;
+            color: #d32f2f;
+        }
+        .children-container {
+            display: none;
+        }
+        .children-container.open {
+            display: block;
+        }
+        .node-label.highlight {
+            background: #fef9e7 !important;
+            border-left: 3px solid #f59e0b;
+            padding-left: 4px;
+        }
+        .node-label.selected {
+            background: var(--primary-light) !important;
+            border-left: 3px solid var(--primary);
+            padding-left: 4px;
+        }
+
+        /* ===== 主区域 ===== */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            background: #f6f8fa;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #aaa;
+            font-size: 1.05rem;
+            text-align: center;
+            gap: 10px;
+        }
+        .main-empty .hint {
+            font-size: 0.85rem;
+            color: #bbb;
+        }
+        .main-empty .hint code {
+            background: #f0f0f0;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .main-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .main-header h2 {
+            font-size: 1.4rem;
+            color: #1a2a3a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .main-header h2 .count {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: #888;
+            background: #f0f0f0;
+            padding: 0 12px;
+            border-radius: 20px;
+        }
+        .main-header .controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .main-header .controls .size-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f0f2f5;
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px solid #e0e4e8;
+        }
+        .main-header .controls .size-control button {
+            background: none;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #555;
+            transition: all 0.1s;
+        }
+        .main-header .controls .size-control button:hover {
+            background: #dde0e4;
+        }
+        .main-header .controls .size-control button.active {
+            background: var(--primary);
+            color: #fff;
+        }
+        .main-header .add-btns {
+            display: none;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .edit-mode .main-header .add-btns {
+            display: flex;
+        }
+        .main-header .add-btns button {
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: all 0.12s;
+        }
+        .main-header .add-btns button:hover {
+            background: #f0f2f5;
+        }
+        .main-header .add-btns .add-taxon {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .main-header .add-btns .add-taxon:hover {
+            background: var(--primary-light);
+        }
+        .main-header .add-btns .add-species {
+            border-color: #1a56db;
+            color: #1a56db;
+        }
+        .main-header .add-btns .add-species:hover {
+            background: #dbeafe;
+        }
+        .main-header .add-btns .add-content {
+            border-color: #b45309;
+            color: #b45309;
+        }
+        .main-header .add-btns .add-content:hover {
+            background: #fef3c7;
+        }
+
+        .main-content-wrap {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* ===== 卡片网格（可拖拽） ===== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--card-min), 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .card-grid .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+            border: 1px solid #eef0f2;
+            position: relative;
+            cursor: pointer;
+        }
+        .card-grid .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        .card-grid .card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            display: block;
+            background: #f0f2f5;
+        }
+        .card-grid .card .card-body {
+            padding: 8px 12px 10px;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .card-grid .card .card-body .name {
+            font-weight: 500;
+            color: #1a2a3a;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .card-grid .card .card-body .name .type-badge {
+            font-size: 0.55rem;
+            font-weight: 400;
+            background: #e8ecf0;
+            padding: 0 8px;
+            border-radius: 10px;
+            color: #666;
+        }
+        .card-grid .card .card-body .name .type-badge.species {
+            background: #dbeafe;
+            color: #1a56db;
+        }
+        .card-grid .card .card-body .name .type-badge.taxon {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .card-grid .card .card-body .name .type-badge.content {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .card-grid .card .card-body .sub {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 2px;
+        }
+        .card-grid .card .card-body .sub .photo-count {
+            color: #aaa;
+            font-size: 0.7rem;
+        }
+        .card-grid .card .card-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+            gap: 3px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 2px 4px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            backdrop-filter: blur(2px);
+        }
+        .card-grid .card:hover .card-actions,
+        .edit-mode .card-grid .card .card-actions {
+            display: flex;
+        }
+        .card-grid .card .card-actions button {
+            background: none;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            color: #555;
+        }
+        .card-grid .card .card-actions button:hover {
+            background: #e8ecf0;
+        }
+        .card-grid .card .card-actions .del-btn:hover {
+            background: #fde8e8;
+            color: #d32f2f;
+        }
+
+        .card-grid .card.content-card {
+            grid-column: 1 / -1;
+            cursor: default;
+            background: #fafbfc;
+            border-color: #e5e7eb;
+            box-shadow: none;
+        }
+        .card-grid .card.content-card .card-body {
+            padding: 12px 16px;
+        }
+        .card-grid .card.content-card .card-body .content-html {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #444;
+        }
+        .card-grid .card.content-card .card-body .content-html p {
+            margin: 4px 0;
+        }
+        .card-grid .card.placeholder-card {
+            background: #f5f6f8;
+            border: 2px dashed #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            color: #aaa;
+            font-size: 0.85rem;
+            cursor: default;
+            box-shadow: none;
+        }
+        .card-grid .card.placeholder-card:hover {
+            transform: none;
+        }
+
+        /* ===== 拖拽中的样式 ===== */
+        .card-grid .card.sortable-chosen {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            transform: scale(1.02);
+            z-index: 10;
+            border-color: var(--primary);
+        }
+        .card-grid .card.sortable-ghost {
+            opacity: 0.4;
+            transform: scale(0.96);
+        }
+        .sortable-drag {
+            cursor: grabbing !important;
+        }
+
+        /* ===== 模态框 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #fff;
+            width: 92%;
+            max-width: 820px;
+            max-height: 90vh;
+            border-radius: 14px;
+            overflow-y: auto;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+        .modal-close {
+            position: sticky;
+            top: 10px;
+            float: right;
+            font-size: 26px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 10;
+            padding: 0 12px;
+            line-height: 1;
+            margin-right: 4px;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        .modal-header {
+            padding: 20px 28px 10px;
+            border-bottom: 1px solid #eee;
+            background: #fafbfc;
+            border-radius: 14px 14px 0 0;
+        }
+        .modal-header h2 {
+            font-size: 1.35rem;
+            color: #1a2a3a;
+            margin: 0;
+        }
+        .modal-header .sub {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 2px;
+        }
+        .modal-body {
+            padding: 18px 28px 22px;
+        }
+        .modal-body .form-group {
+            margin-bottom: 16px;
+        }
+        .modal-body .form-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.82rem;
+            color: #444;
+            margin-bottom: 2px;
+        }
+        .modal-body .form-group .hint {
+            font-weight: 400;
+            color: #999;
+            font-size: 0.72rem;
+        }
+        .modal-body .form-group input,
+        .modal-body .form-group textarea,
+        .modal-body .form-group select {
+            width: 100%;
+            padding: 6px 11px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            transition: border 0.15s;
+            background: #fafbfc;
+        }
+        .modal-body .form-group input:focus,
+        .modal-body .form-group textarea:focus,
+        .modal-body .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(44, 122, 74, 0.08);
+            background: #fff;
+        }
+        .modal-body .form-group textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+        .modal-body .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .modal-body .paste-area {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .modal-body .paste-area button {
+            padding: 4px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.12s;
+        }
+        .modal-body .paste-area button:hover {
+            background: #e8ecf0;
+        }
+        .modal-body .paste-area .paste-btn {
+            border-color: #1a56db;
+            color: #1a56db;
+        }
+        .modal-body .paste-area .paste-btn:hover {
+            background: #dbeafe;
+        }
+
+        /* 图片列表排序样式 */
+        .image-sortable-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 8px;
+            border: 1px solid #e0e4e8;
+            border-radius: 6px;
+            padding: 6px;
+            background: #fafbfc;
+            min-height: 40px;
+        }
+        .image-sortable-list .image-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            background: #fff;
+            border: 1px solid #e8ecf0;
+            border-radius: 4px;
+            cursor: grab;
+            transition: background 0.1s;
+        }
+        .image-sortable-list .image-item:hover {
+            background: #f0f4f8;
+        }
+        .image-sortable-list .image-item .drag-handle {
+            color: #aaa;
+            font-size: 0.8rem;
+            cursor: grab;
+        }
+        .image-sortable-list .image-item .img-preview {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+        }
+        .image-sortable-list .image-item .img-info {
+            flex: 1;
+            font-size: 0.8rem;
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .image-sortable-list .image-item .img-info .caption {
+            color: #888;
+            font-size: 0.7rem;
+        }
+        .image-sortable-list .image-item .img-remove {
+            cursor: pointer;
+            color: #d32f2f;
+            font-size: 0.8rem;
+            padding: 0 4px;
+        }
+        .image-sortable-list .image-item.sortable-chosen {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+        .image-sortable-list .image-item.sortable-ghost {
+            opacity: 0.4;
+        }
+
+        @media (max-width: 640px) {
+            .modal-body .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .modal-footer {
+            padding: 14px 28px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            background: #fafbfc;
+            border-radius: 0 0 14px 14px;
+            flex-wrap: wrap;
+        }
+        .modal-footer button {
+            padding: 7px 22px;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.12s;
+            font-weight: 500;
+        }
+        .modal-footer .btn-save {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-footer .btn-save:hover {
+            background: var(--primary-hover);
+        }
+        .modal-footer .btn-cancel {
+            background: #f0f2f5;
+            color: #555;
+        }
+        .modal-footer .btn-cancel:hover {
+            background: #e5e8ec;
+        }
+        .modal-footer .btn-danger {
+            background: #d32f2f;
+            color: #fff;
+        }
+        .modal-footer .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        /* ===== 物种详情弹窗 ===== */
+        .species-detail .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .species-detail .detail-grid .item {
+            background: #f5f6f8;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .species-detail .detail-grid .item strong {
+            display: block;
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .species-detail .detail-grid .item span {
+            font-size: 0.88rem;
+        }
+        .species-detail .photo-strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 6px 0;
+        }
+        .species-detail .photo-strip img {
+            width: 140px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.15s;
+            border: 1px solid #eee;
+        }
+        .species-detail .photo-strip img:hover {
+            transform: scale(1.03);
+        }
+        .species-detail .ref-list {
+            padding-left: 18px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .species-detail .ref-list li {
+            margin-bottom: 3px;
+        }
+        .species-detail .markdown-body h3 {
+            margin: 14px 0 4px;
+            font-size: 1rem;
+            color: #1a2a3a;
+        }
+        .species-detail .markdown-body p {
+            margin: 3px 0 8px;
+            line-height: 1.7;
+        }
+        .species-detail .markdown-body ul,
+        .species-detail .markdown-body ol {
+            padding-left: 18px;
+            margin: 4px 0 10px;
+        }
+
+        /* ===== 灯箱 ===== */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox img {
+            max-width: 92%;
+            max-height: 82%;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        .lightbox .caption {
+            color: #ddd;
+            margin-top: 12px;
+            font-size: 0.95rem;
+            max-width: 80%;
+            text-align: center;
+        }
+        .lightbox .close {
+            position: absolute;
+            top: 18px;
+            right: 28px;
+            font-size: 34px;
+            color: #fff;
+            cursor: pointer;
+            background: none;
+            border: none;
+            opacity: 0.7;
+        }
+        .lightbox .close:hover {
+            opacity: 1;
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a3a;
+            color: #fff;
+            padding: 8px 26px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.warning {
+            background: #b45309;
+        }
+        .toast.info {
+            background: #1a56db;
+        }
+
+        /* ===== 滚动条 ===== */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f2f5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5cbd2;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8b0b8;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 800px) {
+            .sidebar {
+                width: 280px !important;
+                min-width: 180px;
+                padding: 10px 6px;
+            }
+            .main {
+                padding: 14px 16px;
+            }
+            .card-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            .modal {
+                width: 96%;
+                max-width: 100%;
+            }
+            .modal-body {
+                padding: 14px 16px;
+            }
+            .modal-header {
+                padding: 14px 16px 8px;
+            }
+            .modal-footer {
+                padding: 10px 16px 14px;
+            }
+            .species-detail .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-resizer {
+                width: 6px;
+                right: -3px;
+            }
+        }
+        @media (max-width: 600px) {
+            .sidebar {
+                width: 200px !important;
+                min-width: 140px;
+                font-size: 0.8rem;
+            }
+            .sidebar-header h2 {
+                font-size: 0.95rem;
+            }
+            .node-label {
+                font-size: 0.78rem;
+                padding: 3px 4px;
+            }
+            .main {
+                padding: 10px 10px;
+            }
+            .main-header h2 {
+                font-size: 1.1rem;
+            }
+            .card-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .card-grid .card img {
+                height: 100px;
+            }
+            .main-header .controls .size-control button {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 侧边栏 ===== -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-resizer" id="sidebarResizer"></div>
+        <div class="sidebar-header">
+            <h2><img src="ProjectLogo3.svg" alt="DHI Logo" style="height: 5em; vertical-align: middle; margin-right: 0.2em;"> DHI Taxonomic Notebook<small>v1.0.0 (presented by 虹蘅馆)</small></h2>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="搜索分类群或物种..." autocomplete="off" />
+            <div id="searchSuggestions" class="search-suggestions"></div>
+        </div>
+
+        <div class="toolbar">
+            <button id="editToggleBtn" class="btn-primary" onclick="toggleEditMode()">✏️ 编辑模式</button>
+            <button onclick="exportData()">📥 导出JSON</button>
+            <button onclick="document.getElementById('importFile').click()">📤 导入JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+            <button onclick="resetAll()" class="btn-danger" style="border-color:#d32f2f;color:#d32f2f;">🗑 重置</button>
+        </div>
+
+        <div class="tree-wrap" id="treeWrap">
+            <div id="treeRoot"></div>
+        </div>
+    </div>
+
+    <!-- ===== 主区域 ===== -->
+    <div class="main" id="mainArea">
+        <div class="main-empty" id="emptyState">
+            <div style="font-size:2.8rem;">🌿</div>
+            <div>点击左侧分类群查看内容</div>
+            <div class="hint">开启 <code>编辑模式</code> 可添加、删除、拖拽排序</div>
+        </div>
+        <div id="mainContent" style="display:none;flex:1;display:none;flex-direction:column;">
+            <div class="main-header" id="mainHeader"></div>
+            <div class="main-content-wrap" id="mainContentWrap"></div>
+        </div>
+    </div>
+
+    <!-- ===== 通用模态框 ===== -->
+    <div class="modal-overlay" id="genericModal">
+        <div class="modal" id="modalContainer">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- ===== 物种详情模态框 ===== -->
+    <div class="modal-overlay" id="speciesModal">
+        <div class="modal species-detail" id="speciesModalContainer">
+            <button class="modal-close" id="speciesModalClose">&times;</button>
+            <div id="speciesDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- ===== 灯箱 ===== -->
+    <div class="lightbox" id="lightbox">
+        <button class="close" id="lightboxClose">&times;</button>
+        <img src="" alt="" id="lightboxImg" />
+        <div class="caption" id="lightboxCaption"></div>
+    </div>
+
+    <!-- ===== Toast ===== -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================================
+        // 📦 IndexedDB 图片存储（绕开 localStorage 限制）
+        // ============================================================
+
+        const DB_NAME = 'TaxonomyImages';
+        const STORE_NAME = 'images';
+        let db = null;
+
+        const CURRENT_VERSION = '1.0.0'
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                if (db) { resolve(db); return; }
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = function(e) {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains(STORE_NAME)) {
+                        d.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = function(e) {
+                    db = e.target.result;
+                    resolve(db);
+                };
+                request.onerror = function(e) {
+                    reject(e.target.error);
+                };
+            });
+        }
+
+        function saveImageToDB(uuid, blob) {
+            return openDB().then(db => {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.put({ id: uuid, blob: blob });
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            });
+        }
+
+        function getImageFromDB(uuid) {
+            return openDB().then(db => {
+                return new Promise((resolve) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.get(uuid);
+                    req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+                    req.onerror = () => resolve(null);
+                });
+            });
+        }
+
+        function getAllImagesFromDB() {
+            return openDB().then(db => {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            });
+        }
+
+        function deleteImageFromDB(uuid) {
+            return openDB().then(db => {
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.delete(uuid);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            });
+        }
+
+        function generateUUID() {
+            return 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        }
+
+        // ============================================================
+        // 🖼 统一的图片 Blob 设置函数（管理 ObjectURL 生命周期）
+        // ============================================================
+
+        function setImageBlob(imgElement, blob, fallbackSrc, fallbackObjectFit) {
+            if (!imgElement) return;
+
+            if (imgElement._blobURL) {
+                URL.revokeObjectURL(imgElement._blobURL);
+                imgElement._blobURL = null;
+            }
+
+            if (blob) {
+                const url = URL.createObjectURL(blob);
+                imgElement.src = url;
+                imgElement._blobURL = url;
+                imgElement.style.objectFit = 'cover';
+            } else {
+                const fallback = fallbackSrc ||
+                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140"%3E%3Crect fill="%23f0f2f5" width="200" height="140"/%3E%3Ctext x="50%25" y="50%25" font-size="14" fill="%23999" text-anchor="middle" dy=".3em"%E5%9B%BE%E7%89%87%E4%B8%8D%E5%AD%98%E5%9C%A8%3C/text%3E%3C/svg%3E';
+                imgElement.src = fallback;
+                imgElement._blobURL = null;
+                imgElement.style.objectFit = fallbackObjectFit || 'contain';
+            }
+        }
+
+        // ============================================================
+        // 🖼 图片引用加载器（从 IndexedDB 加载，使用 setImageBlob）
+        // ============================================================
+
+        async function loadImageRefs(container) {
+            container = container || document;
+            const elements = container.querySelectorAll('[data-img-uuid]');
+
+            await Promise.all(Array.from(elements).map(async (el) => {
+                const uuid = el.dataset.imgUuid;
+                if (el._blobURL && el.src && el.src.startsWith('blob:')) {
+                    return;
+                }
+                try {
+                    const blob = await getImageFromDB(uuid);
+                    if (blob) {
+                        setImageBlob(el, blob);
+                    } else {
+                        setImageBlob(el, null);
+                    }
+                } catch (e) {
+                    console.warn('图片加载失败', uuid, e);
+                    setImageBlob(el, null);
+                }
+            }));
+        }
+
+        // ============================================================
+        // 🖼 灯箱（使用 setImageBlob 管理 ObjectURL）
+        // ============================================================
+
+        let currentLightboxBlobURL = null;
+
+        function openLightbox(src, caption) {
+            if (currentLightboxBlobURL) {
+                URL.revokeObjectURL(currentLightboxBlobURL);
+                currentLightboxBlobURL = null;
+            }
+
+            const img = document.getElementById('lightboxImg');
+            const cap = document.getElementById('lightboxCaption');
+
+            img.src = src;
+            cap.textContent = caption || '';
+            document.getElementById('lightbox').classList.add('active');
+
+            if (src && src.startsWith('blob:')) {
+                currentLightboxBlobURL = src;
+            }
+        }
+
+        function closeLightbox() {
+            if (currentLightboxBlobURL) {
+                URL.revokeObjectURL(currentLightboxBlobURL);
+                currentLightboxBlobURL = null;
+            }
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        function setupLightbox() {
+            const lb = document.getElementById('lightbox');
+            document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+            lb.addEventListener('click', function(e) {
+                if (e.target === this) closeLightbox();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeLightbox();
+                    document.getElementById('speciesModal').classList.remove('active');
+                    document.getElementById('genericModal').classList.remove('active');
+                }
+            });
+        }
+
+        // ============================================================
+        // 🔥 灯箱事件委托处理函数（全局）
+        // ============================================================
+
+        async function modalPhotoClickHandler(e) {
+            const img = e.target.closest('.photo-strip img');
+            if (!img) return;
+            e.stopPropagation();
+
+            if (img.dataset.imgUuid) {
+                try {
+                    const blob = await getImageFromDB(img.dataset.imgUuid);
+                    if (!blob) {
+                        toast('❌ 图片数据已丢失');
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    openLightbox(url, img.dataset.caption || '');
+                } catch (err) {
+                    toast('❌ 图片加载失败');
+                }
+                return;
+            }
+
+            const src = img.dataset.src || img.src;
+            if (src) {
+                openLightbox(src, img.dataset.caption || '');
+            } else {
+                toast('❌ 图片链接无效');
+            }
+        }
+
+        // ============================================================
+        // 📦 数据层
+        // ============================================================
+
+        const DEFAULT_DATA = {
+            id: 'root',
+            name: '分类学笔记',
+            type: 'taxon',
+            version: CURRENT_VERSION, // 统一版本号
+            children: []
+        };
+
+        let treeData = null;
+        let allNodes = [];
+        let selectedNode = null;
+        let isEditMode = false;
+        let idCounter = 1000;
+        let sortableInstances = [];
+        let treeSortableInstances = [];
+        let imageSortableInstances = [];
+
+        function generateId() { return 'n' + (++idCounter); }
+
+        function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+        function findNodeById(root, id) {
+            if (root.id === id) return root;
+            if (root.children) {
+                for (let child of root.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function findParent(root, childId) {
+            if (root.children) {
+                for (let child of root.children) {
+                    if (child.id === childId) return root;
+                    const found = findParent(child, childId);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // ===== 获取节点所属的分类路径（只含 taxon 类型，不含根节点） =====
+        function getTaxonPath(node, root) {
+            const path = [];
+            let current = node;
+            while (current && current.id !== root.id) {
+                const parent = findParent(root, current.id);
+                if (!parent) break;
+                // 如果父级是 taxon，记录名称
+                if (parent.type === 'taxon') {
+                    path.unshift(parent.name || '未命名分类');
+                }
+                current = parent;
+            }
+            return path; // 例如 ["报春苣苔属", "中华组"]
+        }
+
+        function getAllNodes(root, path) {
+            path = path || [];
+            const currentPath = path.concat(root);
+            const result = [{ node: root, path: currentPath }];
+            if (root.children) {
+                for (let child of root.children) {
+                    result.push(...getAllNodes(child, currentPath));
+                }
+            }
+            return result;
+        }
+
+        function getDisplayName(node) {
+            if (node.type === 'species') return node.commonName || node.latinName || node.name || '未命名物种';
+            if (node.type === 'content') return '📝 笔记';
+            return node.name || '未命名';
+        }
+
+        function getTypeLabel(node) {
+            switch (node.type) {
+                case 'taxon':
+                    return '分类';
+                case 'species':
+                    return '物种';
+                case 'content':
+                    return '笔记';
+                default:
+                    return '';
+            }
+        }
+
+        function getTypeBadgeClass(node) {
+            switch (node.type) {
+                case 'taxon':
+                    return 'taxon';
+                case 'species':
+                    return 'species';
+                case 'content':
+                    return 'content';
+                default:
+                    return '';
+            }
+        }
+
+        // ===== 重建 idCounter（扫描树中所有节点ID） =====
+        function rebuildIdCounter(root) {
+            let max = 0;
+            (function scan(node) {
+                if (typeof node.id === 'string' && node.id.startsWith('n')) {
+                    const num = parseInt(node.id.slice(1), 10);
+                    if (!isNaN(num) && num > max) {
+                        max = num;
+                    }
+                }
+                if (node.children) {
+                    for (let child of node.children) {
+                        scan(child);
+                    }
+                }
+            })(root);
+            return max + 1; // 下一个可用ID
+        }
+
+        // ============================================================
+        // 🌳 树渲染
+        // ============================================================
+
+        function renderTree() {
+            const container = document.getElementById('treeRoot');
+            container.innerHTML = '';
+            if (!treeData) return;
+            renderNode(treeData, container);
+            const rootLi = container.querySelector('li');
+            if (rootLi) {
+                const cd = rootLi.querySelector(':scope > .children-container');
+                const lb = rootLi.querySelector(':scope > .node-label');
+                if (cd && lb) { cd.classList.add('open');
+                    lb.classList.add('expanded'); }
+            }
+            if (selectedNode) highlightNode(selectedNode.id);
+            updateEditButtons();
+            rebuildSearchIndex();
+            initTreeSortable();
+        }
+
+        function renderNode(node, container) {
+            const li = document.createElement('li');
+            li.dataset.nodeId = node.id;
+            li._node = node;
+
+            const label = document.createElement('div');
+            label.className = 'node-label';
+            if (node.type === 'taxon' && node.children && node.children.length > 0) {
+                label.classList.add('node-has-children');
+            } else {
+                label.classList.add('node-leaf');
+            }
+            if (node.id === selectedNode?.id) label.classList.add('selected');
+
+            const arrow = document.createElement('span');
+            arrow.className = 'arrow';
+            const hasTaxonChildren = (node.children || []).some(c => c.type === 'taxon');
+            if (hasTaxonChildren) { arrow.textContent = '▶'; } else if (node.children && node.children.length > 0) { arrow
+                    .textContent = '📄';
+                arrow.style.color = '#888'; } else { arrow.textContent = '•';
+                arrow.style.color = '#bbb';
+                arrow.style.fontSize = '14px'; }
+            label.appendChild(arrow);
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'node-name';
+            nameSpan.textContent = getDisplayName(node);
+
+            const tag = document.createElement('span');
+            tag.className = 'type-tag';
+            if (node.type === 'species') { tag.classList.add('species-tag');
+                tag.textContent = '物种'; } else if (node.type === 'content') { tag.classList.add('content-tag');
+                tag.textContent = '笔记'; } else { tag.textContent = '分类'; }
+            nameSpan.appendChild(tag);
+
+            if (node.type === 'species' && node.photos && node.photos.length) {
+                const icon = document.createElement('span');
+                icon.textContent = ' 📷';
+                icon.style.fontSize = '0.65rem';
+                icon.style.color = '#888';
+                nameSpan.appendChild(icon);
+            }
+            if (node.type === 'taxon' && node.photos && node.photos.length) {
+                const icon = document.createElement('span');
+                icon.textContent = ' 🖼';
+                icon.style.fontSize = '0.65rem';
+                icon.style.color = '#888';
+                nameSpan.appendChild(icon);
+            }
+
+            label.appendChild(nameSpan);
+
+            const actions = document.createElement('span');
+            actions.className = 'node-actions';
+            if (node.type !== 'root') {
+                if (node.type === 'taxon') {
+                    const b1 = document.createElement('button');
+                    b1.textContent = '➕';
+                    b1.title = '添加子分类';
+                    b1.onclick = e => { e.stopPropagation();
+                        showAddTaxonModal(node); };
+                    actions.appendChild(b1);
+                    const b2 = document.createElement('button');
+                    b2.textContent = '🐾';
+                    b2.title = '添加物种';
+                    b2.onclick = e => { e.stopPropagation();
+                        showAddSpeciesModal(node); };
+                    actions.appendChild(b2);
+                    const b3 = document.createElement('button');
+                    b3.textContent = '📝';
+                    b3.title = '添加笔记';
+                    b3.onclick = e => { e.stopPropagation();
+                        showAddContentModal(node); };
+                    actions.appendChild(b3);
+                }
+                const bEdit = document.createElement('button');
+                bEdit.textContent = '✎';
+                bEdit.title = '编辑';
+                bEdit.onclick = e => { e.stopPropagation();
+                    openEditor(node); };
+                actions.appendChild(bEdit);
+                const bDel = document.createElement('button');
+                bDel.textContent = '✕';
+                bDel.className = 'del-btn';
+                bDel.title = '删除';
+                bDel.onclick = e => { e.stopPropagation();
+                    deleteNode(node.id); };
+                actions.appendChild(bDel);
+            }
+            label.appendChild(actions);
+
+            label.addEventListener('click', function(e) {
+                if (e.target.closest('button')) return;
+                if (node.type === 'content') { showContentDetail(node); return; }
+                if (node.type === 'species') { showSpeciesDetail(node); return; }
+                const cd = li.querySelector(':scope > .children-container');
+                if (cd) {
+                    const open = cd.classList.contains('open');
+                    if (open) { cd.classList.remove('open');
+                        label.classList.remove('expanded'); } else { cd.classList.add('open');
+                        label.classList.add('expanded'); }
+                }
+                selectNode(node);
+                showTaxonContent(node);
+            });
+
+            li.appendChild(label);
+
+            if (node.children && node.children.length) {
+                const childDiv = document.createElement('div');
+                childDiv.className = 'children-container';
+                if (node.id === 'root') { childDiv.classList.add('open');
+                    label.classList.add('expanded'); }
+                const childUl = document.createElement('ul');
+                const taxonChildren = (node.children || []).filter(c => c.type === 'taxon');
+                const otherChildren = (node.children || []).filter(c => c.type !== 'taxon');
+                for (let child of [...taxonChildren, ...otherChildren]) {
+                    renderNode(child, childUl);
+                }
+                childDiv.appendChild(childUl);
+                li.appendChild(childDiv);
+            }
+
+            container.appendChild(li);
+        }
+
+        // ============================================================
+        // 🔄 树拖拽（跨分类移动）
+        // ============================================================
+
+        function initTreeSortable() {
+            treeSortableInstances.forEach(s => s.destroy());
+            treeSortableInstances = [];
+
+            const treeWrap = document.getElementById('treeWrap');
+            const uls = treeWrap.querySelectorAll('ul');
+            uls.forEach(ul => {
+                const sortable = new Sortable(ul, {
+                    group: 'tree',
+                    animation: 150,
+                    handle: '.node-label',
+                    filter: 'li[data-node-id="root"]',
+                    draggable: 'li',
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    disabled: !isEditMode,
+                    onEnd: function(evt) {
+                        const item = evt.item;
+                        const nodeId = item.dataset.nodeId;
+                        if (!nodeId || nodeId === 'root') return;
+                        const node = findNodeById(treeData, nodeId);
+                        if (!node) return;
+
+                        const targetUl = evt.to;
+                        let parentLi = targetUl.closest('li');
+                        let targetParentId = parentLi ? parentLi.dataset.nodeId : 'root';
+                        let targetParent = targetParentId === 'root' ? treeData : findNodeById(treeData,
+                            targetParentId);
+                        if (!targetParent) return;
+
+                        const newIndex = evt.newIndex;
+
+                        if (targetParent.id === nodeId) {
+                            toast('❌ 不能将节点移动到自身');
+                            saveAndRefresh();
+                            return;
+                        }
+                        let isDescendant = false;
+
+                        function checkDescendant(parent, childId) {
+                            if (!parent.children) return false;
+                            for (let c of parent.children) {
+                                if (c.id === childId) return true;
+                                if (checkDescendant(c, childId)) return true;
+                            }
+                            return false;
+                        }
+                        if (checkDescendant(node, targetParent.id)) {
+                            toast('❌ 不能将节点移动到自己的子节点下');
+                            saveAndRefresh();
+                            return;
+                        }
+
+                        const oldParent = findParent(treeData, nodeId);
+                        if (!oldParent) return;
+                        if (oldParent.id === targetParent.id) {
+                            const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
+                            if (oldIndex !== -1 && oldIndex !== newIndex) {
+                                const [removed] = oldParent.children.splice(oldIndex, 1);
+                                oldParent.children.splice(newIndex, 0, removed);
+                                saveData();
+                                renderTree();
+                                if (selectedNode) {
+                                    const refreshed = findNodeById(treeData, selectedNode.id);
+                                    if (refreshed) { selectedNode = refreshed;
+                                        showTaxonContent(refreshed); } else { selectedNode = treeData;
+                                        showTaxonContent(treeData); }
+                                }
+                                toast('✅ 排序已更新');
+                            }
+                            return;
+                        }
+
+                        const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
+                        if (oldIndex === -1) return;
+                        const [movedNode] = oldParent.children.splice(oldIndex, 1);
+                        targetParent.children.splice(newIndex, 0, movedNode);
+
+                        saveData();
+                        renderTree();
+                        expandPath(targetParent.id);
+                        selectNode(targetParent);
+                        showTaxonContent(targetParent);
+                        toast(`✅ 已将「${getDisplayName(movedNode)}」移动到「${getDisplayName(targetParent)}」`);
+                    }
+                });
+                treeSortableInstances.push(sortable);
+            });
+        }
+
+        // ============================================================
+        // 📋 主区域内容展示（含拖拽排序）
+        // ============================================================
+
+        function showTaxonContent(node) {
+            const mainContent = document.getElementById('mainContent');
+            const emptyState = document.getElementById('emptyState');
+            if (!node || node.type !== 'taxon') {
+                mainContent.style.display = 'none';
+                emptyState.style.display = 'flex';
+                return;
+            }
+            emptyState.style.display = 'none';
+            mainContent.style.display = 'flex';
+
+            const allChildren = node.children || [];
+            const displayChildren = allChildren;
+            const count = allChildren.filter(c => c.type !== 'content').length;
+
+            const header = document.getElementById('mainHeader');
+            header.innerHTML = `
+                <h2>${node.name || '未命名'} <span class="count">${count} 个子项</span></h2>
+                <div class="controls">
+                    <div class="size-control">
+                        <button data-size="small" title="小卡片">小</button>
+                        <button data-size="medium" class="active" title="中等卡片">中</button>
+                        <button data-size="large" title="大卡片">大</button>
+                    </div>
+                    <div class="add-btns">
+                        <button class="add-taxon" onclick="showAddTaxonModal(findNodeById(treeData, '${node.id}'))">➕ 子分类</button>
+                        <button class="add-species" onclick="showAddSpeciesModal(findNodeById(treeData, '${node.id}'))">🐾 物种</button>
+                        <button class="add-content" onclick="showAddContentModal(findNodeById(treeData, '${node.id}'))">📝 笔记</button>
+                    </div>
+                </div>
+            `;
+
+            header.querySelectorAll('.size-control button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const size = this.dataset.size;
+                    setCardSize(size);
+                    header.querySelectorAll('.size-control button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            const wrap = document.getElementById('mainContentWrap');
+            if (displayChildren.length === 0) {
+                wrap.innerHTML = `
+                    <div class="card-grid" id="sortableGrid_${node.id}">
+                        <div class="card placeholder-card">
+                            <div class="card-body" style="text-align:center;padding:16px;">
+                                <div style="font-size:2rem;margin-bottom:6px;">📭</div>
+                                <div>此分类群下暂无内容</div>
+                                <div style="font-size:0.75rem;color:#bbb;margin-top:4px;">点击上方按钮添加</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let gridHtml = `<div class="card-grid" id="sortableGrid_${node.id}">`;
+                for (let item of displayChildren) {
+                    gridHtml += renderCard(item);
+                }
+                gridHtml += `</div>`;
+                wrap.innerHTML = gridHtml;
+            }
+
+            initSortable(node.id);
+            loadImageRefs(wrap);
+
+            document.querySelectorAll('.node-label').forEach(el => el.classList.remove('selected'));
+            const li = document.querySelector(`li[data-node-id="${node.id}"]`);
+            if (li) { const lb = li.querySelector('.node-label'); if (lb) lb.classList.add('selected'); }
+            selectedNode = node;
+
+            updateEditButtons();
+
+            const savedSize = localStorage.getItem('cardSize') || 'medium';
+            setCardSize(savedSize);
+            header.querySelectorAll('.size-control button').forEach(b => {
+                b.classList.toggle('active', b.dataset.size === savedSize);
+            });
+        }
+
+        // ============================================================
+        // 🃏 渲染卡片（支持分类群、物种、笔记，均显示图片）
+        // ============================================================
+
+        function renderCard(item) {
+            const type = item.type;
+            const typeBadge = getTypeBadgeClass(item);
+            const displayName = getDisplayName(item);
+            const hasPhoto = (item.photos && item.photos.length > 0);
+            const firstPhoto = hasPhoto ? item.photos[0] : null;
+
+            let extraClass = '';
+            let bodyExtra = '';
+            let subInfo = '';
+            let clickHandler = '';
+            let imgHtml = '';
+
+            if (firstPhoto) {
+                const src = firstPhoto.src || '';
+                const caption = firstPhoto.caption || '';
+                const isRef = firstPhoto.isImageRef || false;
+                const uuid = firstPhoto.uuid || '';
+
+                if (isRef && uuid) {
+                    imgHtml =
+                        `<img data-img-uuid="${uuid}" data-caption="${caption}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${displayName}" loading="lazy" />`;
+                } else if (src && (src.startsWith('data:') || src.startsWith('http') || src.startsWith('/'))) {
+                    imgHtml =
+                        `<img src="${src}" data-src="${src}" data-caption="${caption}" alt="${displayName}" loading="lazy" />`;
+                } else {
+                    imgHtml = '';
+                }
+            }
+
+            if (type === 'content') {
+                extraClass = 'content-card';
+                bodyExtra = `<div class="content-html">${marked.parse(item.html || '')}</div>`;
+                clickHandler = `showContentDetail(findNodeById(treeData, '${item.id}'))`;
+            } else if (type === 'taxon') {
+                const count = (item.children || []).filter(c => c.type !== 'content').length;
+                subInfo = `<div class="sub">${count} 个子项 ${hasPhoto ? '· 🖼' : ''}</div>`;
+                clickHandler = `showTaxonContent(findNodeById(treeData, '${item.id}'))`;
+            } else if (type === 'species') {
+                const latin = item.latinName || '';          // 只取拉丁学名
+                const author = item.authors ? item.authors : '';
+                const fallbackName = item.commonName || item.name || '';  // 备选显示名
+                let latinDisplay = latin ? `<i>${latin}</i>` : fallbackName;  // 有拉丁名就斜体，否则显示普通名
+                let authorDisplay = author ? ' ' + author : '';
+                subInfo = `<div class="sub">${latinDisplay}${authorDisplay}${hasPhoto ? ' <span class="photo-count">· 📷 ' + item.photos.length + '张</span>' : ''}</div>`;
+                clickHandler = `showSpeciesDetail(findNodeById(treeData, '${item.id}'))`;
+            }
+
+            const cardId = `card_${item.id}`;
+
+            return `
+                <div class="card ${extraClass}" id="${cardId}" data-node-id="${item.id}" data-type="${type}" onclick="${clickHandler}">
+                    ${imgHtml}
+                    <div class="card-body">
+                        <div class="name">
+                            ${displayName}
+                            <span class="type-badge ${typeBadge}">${getTypeLabel(item)}</span>
+                        </div>
+                        ${subInfo}
+                        ${bodyExtra}
+                    </div>
+                    <div class="card-actions">
+                        <button onclick="event.stopPropagation(); openEditor(findNodeById(treeData, '${item.id}'))">✎</button>
+                        <button class="del-btn" onclick="event.stopPropagation(); deleteNode('${item.id}')">✕</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===== 卡片尺寸控制 =====
+        function setCardSize(size) {
+            const root = document.documentElement;
+            let minVal;
+            switch (size) {
+                case 'small':
+                    minVal = '140px';
+                    break;
+                case 'large':
+                    minVal = '280px';
+                    break;
+                default:
+                    minVal = '190px';
+                    break;
+            }
+            root.style.setProperty('--card-min', minVal);
+            localStorage.setItem('cardSize', size);
+        }
+
+        // ============================================================
+        // 🔄 Sortable 拖拽初始化（卡片）
+        // ============================================================
+
+        function initSortable(parentId) {
+            sortableInstances.forEach(s => s.destroy());
+            sortableInstances = [];
+
+            const grid = document.getElementById(`sortableGrid_${parentId}`);
+            if (!grid) return;
+
+            const sortable = new Sortable(grid, {
+                animation: 200,
+                handle: '.card',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                delay: 100,
+                delayOnTouchOnly: true,
+                onEnd: function(evt) {
+                    const items = grid.querySelectorAll('.card');
+                    const newOrder = [];
+                    for (let el of items) {
+                        const id = el.dataset.nodeId;
+                        if (id) newOrder.push(id);
+                    }
+                    const parent = findNodeById(treeData, parentId);
+                    if (!parent) return;
+                    const newChildren = [];
+                    for (let id of newOrder) {
+                        const found = parent.children.find(c => c.id === id);
+                        if (found) newChildren.push(found);
+                    }
+                    for (let c of parent.children) {
+                        if (!newChildren.find(n => n.id === c.id)) {
+                            newChildren.push(c);
+                        }
+                    }
+                    parent.children = newChildren;
+                    saveData();
+                    showTaxonContent(parent);
+                    selectNode(parent);
+                    toast('✅ 排序已保存');
+                }
+            });
+
+            sortableInstances.push(sortable);
+        }
+
+        // ============================================================
+        // 🔍 搜索
+        // ============================================================
+
+        function rebuildSearchIndex() {
+            allNodes = getAllNodes(treeData);
+        }
+
+        function setupSearch() {
+            const input = document.getElementById('searchInput');
+            const suggestions = document.getElementById('searchSuggestions');
+
+            input.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                if (!query) { suggestions.classList.remove('active'); return; }
+                const matches = allNodes.filter(item => {
+                    const name = getDisplayName(item.node).toLowerCase();
+                    return name.indexOf(query) !== -1;
+                });
+                if (matches.length === 0) {
+                    suggestions.innerHTML = '<div class="suggestion-item" style="color:#888;">无匹配结果</div>';
+                } else {
+                    let html = '';
+                    const maxShow = Math.min(matches.length, 25);
+                    for (let i = 0; i < maxShow; i++) {
+                        const item = matches[i];
+                        const typeLabel = getTypeLabel(item.node);
+                        const badgeClass = item.node.type === 'species' ? 'species' : 'taxon';
+                        html += `
+                            <div class="suggestion-item" data-node-id="${item.node.id}">
+                                <span>${getDisplayName(item.node)}</span>
+                                <span class="badge ${badgeClass}">${typeLabel}</span>
+                            </div>
+                        `;
+                    }
+                    suggestions.innerHTML = html;
+                }
+                suggestions.classList.add('active');
+            });
+
+            suggestions.addEventListener('click', function(e) {
+                const item = e.target.closest('.suggestion-item');
+                if (!item) return;
+                const nodeId = item.dataset.nodeId;
+                const node = findNodeById(treeData, nodeId);
+                if (!node) return;
+                suggestions.classList.remove('active');
+                input.value = '';
+                if (node.type === 'species') { showSpeciesDetail(node); return; }
+                if (node.type === 'content') { showContentDetail(node); return; }
+                expandPath(node.id);
+                selectNode(node);
+                showTaxonContent(node);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-container')) suggestions.classList.remove('active');
+            });
+        }
+
+        function expandPath(nodeId) {
+            const node = findNodeById(treeData, nodeId);
+            if (!node) return;
+            const path = [];
+            let current = node;
+            while (current) {
+                path.unshift(current);
+                const parent = findParent(treeData, current.id);
+                current = parent;
+            }
+            for (let n of path) {
+                if (n.type === 'taxon' && n.children && n.children.length) {
+                    const li = document.querySelector(`li[data-node-id="${n.id}"]`);
+                    if (li) {
+                        const cd = li.querySelector(':scope > .children-container');
+                        const lb = li.querySelector(':scope > .node-label');
+                        if (cd && !cd.classList.contains('open')) { cd.classList.add('open'); if (lb) lb.classList.add(
+                                'expanded'); }
+                    }
+                }
+            }
+            const targetLi = document.querySelector(`li[data-node-id="${nodeId}"]`);
+            if (targetLi) {
+                targetLi.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                const lb = targetLi.querySelector('.node-label');
+                if (lb) { lb.classList.add('highlight');
+                    setTimeout(() => lb.classList.remove('highlight'), 2000); }
+            }
+        }
+
+        function selectNode(node) {
+            selectedNode = node;
+            document.querySelectorAll('.node-label').forEach(el => el.classList.remove('selected'));
+            const li = document.querySelector(`li[data-node-id="${node.id}"]`);
+            if (li) { const lb = li.querySelector('.node-label'); if (lb) lb.classList.add('selected'); }
+        }
+
+        function selectNodeById(id) {
+            const node = findNodeById(treeData, id);
+            if (node) selectNode(node);
+            return node;
+        }
+
+        function highlightNode(id) {
+            document.querySelectorAll('.node-label.highlight').forEach(el => el.classList.remove('highlight'));
+            const li = document.querySelector(`li[data-node-id="${id}"]`);
+            if (li) { const lb = li.querySelector('.node-label'); if (lb) lb.classList.add('highlight'); }
+        }
+
+        // ============================================================
+        // ✏️ 编辑模式
+        // ============================================================
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('editToggleBtn');
+            if (isEditMode) {
+                btn.classList.add('active');
+                btn.textContent = '✅ 编辑模式';
+                document.body.classList.add('edit-mode');
+                localStorage.setItem('editMode', 'true');
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '✏️ 编辑模式';
+                document.body.classList.remove('edit-mode');
+                localStorage.setItem('editMode', 'false');
+            }
+            updateEditButtons();
+            treeSortableInstances.forEach(s => s.option('disabled', !isEditMode));
+            if (selectedNode) showTaxonContent(selectedNode);
+        }
+
+        function updateEditButtons() {
+            document.querySelectorAll('.node-actions').forEach(el => {
+                el.style.display = isEditMode ? 'flex' : 'none';
+            });
+            document.querySelectorAll('.card-actions').forEach(el => {
+                el.style.display = isEditMode ? 'flex' : 'none';
+            });
+            const addBtns = document.querySelectorAll('.add-btns');
+            addBtns.forEach(el => { el.style.display = isEditMode ? 'flex' : 'none'; });
+        }
+
+        // ============================================================
+        // 🖼 图片列表排序功能（模态框内）—— 使用 setImageBlob 管理 ObjectURL
+        // ============================================================
+
+        function initImageSortable(modalElement) {
+            const textareas = modalElement.querySelectorAll('textarea[data-image-field="true"]');
+            textareas.forEach(textarea => {
+                const fieldId = textarea.id;
+                const container = document.createElement('div');
+                container.className = 'image-sortable-list';
+                container.id = 'preview_' + fieldId;
+                textarea.parentNode.insertBefore(container, textarea.nextSibling);
+
+                function parseImages(text) {
+                    return text.split('\n').filter(s => s.trim()).map(line => {
+                        const parts = line.split('|');
+                        return { src: parts[0].trim(), caption: parts[1] ? parts[1].trim() : '' };
+                    });
+                }
+
+                function renderPreview() {
+                    const oldPreviews = container.querySelectorAll('.img-preview');
+                    oldPreviews.forEach(img => {
+                        if (img._blobURL) {
+                            URL.revokeObjectURL(img._blobURL);
+                            img._blobURL = null;
+                        }
+                    });
+
+                    const images = parseImages(textarea.value);
+                    container.innerHTML = '';
+                    if (images.length === 0) {
+                        container.innerHTML =
+                            '<div style="color:#bbb;text-align:center;padding:8px;font-size:0.8rem;">暂无图片，请在上方输入或粘贴</div>';
+                        return;
+                    }
+                    images.forEach((img, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'image-item';
+                        item.dataset.index = index;
+                        const isRef = img.src.startsWith('[img:');
+                        const previewSrc = isRef ?
+                            'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' :
+                            img.src;
+                        item.innerHTML = `
+                            <span class="drag-handle">⠿</span>
+                            <img class="img-preview" src="${previewSrc}" alt="预览" onerror="this.style.display='none'" />
+                            <span class="img-info">
+                                <span>${img.src.length > 40 ? img.src.slice(0,40)+'…' : img.src}</span>
+                                <span class="caption">${img.caption || ''}</span>
+                            </span>
+                            <span class="img-remove" title="移除">✕</span>
+                        `;
+                        if (isRef) {
+                            const uuid = img.src.replace('[img:', '').replace(']', '');
+                            const preview = item.querySelector('.img-preview');
+                            if (preview) {
+                                getImageFromDB(uuid).then(blob => {
+                                    if (blob) {
+                                        setImageBlob(preview, blob);
+                                    } else {
+                                        setImageBlob(preview, null);
+                                    }
+                                }).catch(() => {
+                                    setImageBlob(preview, null);
+                                });
+                            }
+                        }
+                        item.querySelector('.img-remove').addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const idx = parseInt(item.dataset.index);
+                            const lines = textarea.value.split('\n').filter(s => s.trim());
+                            lines.splice(idx, 1);
+                            textarea.value = lines.join('\n');
+                            textarea.dispatchEvent(new Event('input'));
+                            renderPreview();
+                        });
+                        container.appendChild(item);
+                    });
+                    if (window.Sortable) {
+                        const sortable = new Sortable(container, {
+                            animation: 150,
+                            handle: '.drag-handle',
+                            ghostClass: 'sortable-ghost',
+                            chosenClass: 'sortable-chosen',
+                            onEnd: function(evt) {
+                                const items = container.querySelectorAll('.image-item');
+                                const newOrder = [];
+                                items.forEach(el => {
+                                    const idx = parseInt(el.dataset.index);
+                                    const lines = textarea.value.split('\n').filter(s => s
+                                        .trim());
+                                    if (idx < lines.length) {
+                                        newOrder.push(lines[idx]);
+                                    }
+                                });
+                                textarea.value = newOrder.join('\n');
+                                textarea.dispatchEvent(new Event('input'));
+                                renderPreview();
+                            }
+                        });
+                        if (!window._imageSortables) window._imageSortables = [];
+                        window._imageSortables.push(sortable);
+                    }
+                }
+
+                textarea.addEventListener('input', renderPreview);
+                renderPreview();
+            });
+        }
+
+        // ============================================================
+        // 📋 剪贴板粘贴图片（存入 IndexedDB）
+        // ============================================================
+
+        async function pasteImageFromClipboard(textareaId) {
+            const textarea = document.getElementById(textareaId);
+            if (!textarea) return;
+
+            try {
+                if (!navigator.clipboard || !navigator.clipboard.read) {
+                    toast('❌ 当前浏览器不支持剪贴板读取，请使用文件选择或URL');
+                    return;
+                }
+                const items = await navigator.clipboard.read();
+                let imageBlob = null;
+                for (let item of items) {
+                    if (item.types.some(t => t.startsWith('image/'))) {
+                        const type = item.types.find(t => t.startsWith('image/'));
+                        imageBlob = await item.getType(type);
+                        break;
+                    }
+                }
+                if (!imageBlob) {
+                    toast('❌ 剪贴板中没有图片数据');
+                    return;
+                }
+
+                const compressedBlob = await compressImage(imageBlob, 1024, 0.8);
+                const uuid = generateUUID();
+                await saveImageToDB(uuid, compressedBlob);
+
+                const current = textarea.value;
+                const newLine = current ? '\n' : '';
+                textarea.value = current + newLine + `[img:${uuid}]|粘贴图片（压缩后）`;
+                textarea.dispatchEvent(new Event('input'));
+                toast('✅ 图片已存入 IndexedDB，请添加说明文字');
+            } catch (err) {
+                console.error(err);
+                toast('❌ 读取剪贴板失败: ' + err.message);
+            }
+        }
+
+        // 辅助：压缩图片（返回 Blob）
+        function compressImage(blob, maxSize, quality) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(blob);
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width,
+                        h = img.height;
+                    if (w > maxSize || h > maxSize) {
+                        if (w > h) { h = h * maxSize / w;
+                            w = maxSize; } else { w = w * maxSize / h;
+                            h = maxSize; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(function(blob) {
+                        resolve(blob);
+                    }, 'image/jpeg', quality);
+                    URL.revokeObjectURL(url);
+                };
+                img.onerror = function() {
+                    URL.revokeObjectURL(url);
+                    reject('图片加载失败');
+                };
+                img.src = url;
+            });
+        }
+
+        // ============================================================
+        // 🧩 parsePhotos（支持 [img:uuid] 标记）
+        // ============================================================
+
+        function parsePhotos(text) {
+            const lines = text.split('\n').filter(s => s.trim());
+            return lines.map(line => {
+                const parts = line.split('|');
+                let src = parts[0].trim();
+                let caption = parts[1] ? parts[1].trim() : '';
+                const isRef = src.startsWith('[img:');
+                let uuid = '';
+                if (isRef) {
+                    uuid = src.replace('[img:', '').replace(']', '');
+                }
+                return { src, caption, isImageRef: isRef, uuid: uuid };
+            });
+        }
+
+        // ============================================================
+        // 🧪 数据验证函数
+        // ============================================================
+
+        function validateTaxonName(parent, name, excludeId) {
+            const trimmed = name.trim();
+            if (!trimmed) {
+                return { valid: false, message: '⚠️ 请输入分类群名称' };
+            }
+            if (parent.children) {
+                for (let child of parent.children) {
+                    if (child.id === excludeId) continue;
+                    if (child.type === 'taxon' && child.name === trimmed) {
+                        return { valid: false, message: '⚠️ 该分类群名称已存在，请勿重复' };
+                    }
+                }
+            }
+            return { valid: true };
+        }
+
+        function validateSpeciesName(parent, commonName, latinName, excludeId) {
+            const cName = commonName.trim();
+            const lName = latinName.trim();
+            if (!cName && !lName) {
+                return { valid: false, message: '⚠️ 请至少填写中文俗名或拉丁学名' };
+            }
+            if (parent.children) {
+                for (let child of parent.children) {
+                    if (child.id === excludeId) continue;
+                    if (child.type === 'species') {
+                        if (cName && child.commonName === cName) {
+                            return { valid: false, message: '⚠️ 该中文俗名已存在，请勿重复' };
+                        }
+                        if (lName && child.latinName === lName) {
+                            return { valid: false, message: '⚠️ 该拉丁学名已存在，请勿重复' };
+                        }
+                    }
+                }
+            }
+            return { valid: true };
+        }
+
+        // ============================================================
+        // ➕ 添加功能（含数据验证）
+        // ============================================================
+
+        function showAddTaxonModal(parent) {
+            if (!parent) return;
+            showModal({
+                title: '添加子分类群',
+                fields: [
+                    { id: 'name', label: '分类群名称 *', type: 'text', placeholder: '例如：蔷薇科' },
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: 'https://example.com/photo.jpg|栖息地照片', rows: 2,
+                        withPaste: true, isImageField: true }
+                ],
+                onSave: function(data) {
+                    const result = validateTaxonName(parent, data.name);
+                    if (!result.valid) { toast(result.message); return; }
+                    const photos = parsePhotos(data.photos);
+                    const newNode = {
+                        id: generateId(),
+                        name: data.name.trim(),
+                        type: 'taxon',
+                        children: [],
+                        photos: photos
+                    };
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(newNode);
+                    saveAndRefresh();
+                    toast('✅ 已添加分类群: ' + data.name.trim());
+                    expandPath(parent.id);
+                    selectNode(parent);
+                    showTaxonContent(parent);
+                }
+            });
+        }
+
+        function showAddSpeciesModal(parent) {
+            if (!parent) return;
+            showModal({
+                title: '添加物种',
+                fields: [
+                    { id: 'commonName', label: '中文俗名', type: 'text', placeholder: '例如：玫瑰' },
+                    { id: 'latinName', label: '拉丁学名', type: 'text', placeholder: '例如：Rosa rugosa' },
+                    { id: 'authors', label: '命名人', type: 'text', placeholder: '例如：Thunb.' },
+                    { id: 'distribution', label: '分布', type: 'text', placeholder: '分布范围' },
+                    { id: 'habitat', label: '生境', type: 'text', placeholder: '生境描述' },
+                    { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', placeholder: '鉴定特征', rows: 2 },
+                    { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', placeholder: '详细描述', rows: 3 },
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: 'https://example.com/photo.jpg|花朵特写', rows: 2,
+                        withPaste: true, isImageField: true }
+                ],
+                onSave: function(data) {
+                    const result = validateSpeciesName(parent, data.commonName, data.latinName);
+                    if (!result.valid) { toast(result.message); return; }
+                    const photos = parsePhotos(data.photos);
+                    const commonName = data.commonName.trim();
+                    const latinName = data.latinName.trim();
+                    const newNode = {
+                        id: generateId(),
+                        name: latinName || commonName,
+                        type: 'species',
+                        authors: data.authors.trim(),
+                        commonName: commonName,
+                        latinName: latinName,
+                        distribution: data.distribution.trim(),
+                        habitat: data.habitat.trim(),
+                        diagnosis: data.diagnosis.trim(),
+                        description: data.description.trim(),
+                        photos: photos,
+                        synonyms: [],
+                        references: []
+                    };
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(newNode);
+                    saveAndRefresh();
+                    toast('✅ 已添加物种: ' + (commonName || latinName));
+                    expandPath(parent.id);
+                    selectNode(parent);
+                    showTaxonContent(parent);
+                }
+            });
+        }
+
+        function showAddContentModal(parent) {
+            if (!parent) return;
+            showModal({
+                title: '添加笔记',
+                fields: [
+                    { id: 'html', label: '内容（支持HTML / Markdown）', type: 'textarea', placeholder: '输入笔记内容...', rows: 5 }
+                ],
+                onSave: function(data) {
+                    const html = data.html.trim();
+                    if (!html) { toast('请输入内容'); return; }
+                    const newNode = { id: generateId(), type: 'content', html: html };
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(newNode);
+                    saveAndRefresh();
+                    toast('✅ 已添加笔记');
+                    expandPath(parent.id);
+                    selectNode(parent);
+                    showTaxonContent(parent);
+                }
+            });
+        }
+
+        // ============================================================
+        // ✏️ 编辑功能（含数据验证）
+        // ============================================================
+
+        function openEditor(node) {
+            if (!node) return;
+            if (node.type === 'taxon') editTaxon(node);
+            else if (node.type === 'species') editSpecies(node);
+            else if (node.type === 'content') editContent(node);
+        }
+
+        function editTaxon(node) {
+            const parent = findParent(treeData, node.id);
+            if (!parent) { toast('❌ 找不到父节点'); return; }
+            const photosStr = (node.photos || []).map(p => {
+                if (p.isImageRef && p.uuid) return `[img:${p.uuid}]|${p.caption || ''}`;
+                return p.src + '|' + (p.caption || '');
+            }).join('\n');
+            showModal({
+                title: '编辑分类群',
+                fields: [
+                    { id: 'name', label: '分类群名称 *', type: 'text', value: node.name || '' },
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', value: photosStr, rows: 2,
+                        withPaste: true, isImageField: true }
+                ],
+                onSave: function(data) {
+                    const result = validateTaxonName(parent, data.name, node.id);
+                    if (!result.valid) { toast(result.message); return; }
+                    node.name = data.name.trim();
+                    node.photos = parsePhotos(data.photos);
+                    saveAndRefresh();
+                    toast('✅ 已更新分类群');
+                    if (selectedNode && selectedNode.id === node.id) showTaxonContent(node);
+                    else if (selectedNode) showTaxonContent(selectedNode);
+                }
+            });
+        }
+
+        function editSpecies(node) {
+            const parent = findParent(treeData, node.id);
+            if (!parent) { toast('❌ 找不到父节点'); return; }
+            const photosStr = (node.photos || []).map(p => {
+                if (p.isImageRef && p.uuid) return `[img:${p.uuid}]|${p.caption || ''}`;
+                return p.src + '|' + (p.caption || '');
+            }).join('\n');
+            showModal({
+                title: '编辑物种',
+                fields: [
+                    { id: 'commonName', label: '中文俗名', type: 'text', value: node.commonName || '' },
+                    { id: 'latinName', label: '拉丁学名', type: 'text', value: node.latinName || '' },
+                    { id: 'authors', label: '命名人', type: 'text', value: node.authors || '' },
+                    { id: 'distribution', label: '分布', type: 'text', value: node.distribution || '' },
+                    { id: 'habitat', label: '生境', type: 'text', value: node.habitat || '' },
+                    { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', value: node.diagnosis || '', rows: 2 },
+                    { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', value: node.description || '',
+                        rows: 3 },
+                    { id: 'synonyms', label: '异名（每行一条）', type: 'textarea', value: (node.synonyms || []).join('\n'),
+                        rows: 2 },
+                    { id: 'references', label: '参考文献（每行一条）', type: 'textarea', value: (node.references || [])
+                            .join('\n'), rows: 2 },
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', value: photosStr, rows: 2,
+                        withPaste: true, isImageField: true }
+                ],
+                onSave: function(data) {
+                    const result = validateSpeciesName(parent, data.commonName, data.latinName, node.id);
+                    if (!result.valid) { toast(result.message); return; }
+                    node.commonName = data.commonName.trim();
+                    node.latinName = data.latinName.trim();
+                    node.authors = data.authors.trim();
+                    node.distribution = data.distribution.trim();
+                    node.habitat = data.habitat.trim();
+                    node.diagnosis = data.diagnosis.trim();
+                    node.description = data.description.trim();
+                    node.synonyms = data.synonyms.split('\n').filter(s => s.trim());
+                    node.references = data.references.split('\n').filter(s => s.trim());
+                    node.photos = parsePhotos(data.photos);
+                    node.name = node.latinName || node.commonName || '未命名物种';
+                    saveAndRefresh();
+                    toast('✅ 已更新物种');
+                    if (selectedNode) showTaxonContent(selectedNode);
+                }
+            });
+        }
+
+        function editContent(node) {
+            showModal({
+                title: '编辑笔记',
+                fields: [
+                    { id: 'html', label: '内容（支持HTML / Markdown）', type: 'textarea', value: node.html || '', rows: 5 }
+                ],
+                onSave: function(data) {
+                    const html = data.html.trim();
+                    if (!html) { toast('请输入内容'); return; }
+                    node.html = html;
+                    saveAndRefresh();
+                    toast('✅ 已更新笔记');
+                    if (selectedNode) showTaxonContent(selectedNode);
+                }
+            });
+        }
+
+        // ============================================================
+        // 🗑 删除（含递归删除图片）
+        // ============================================================
+
+        function collectAllPhotoUUIDs(node) {
+            const uuids = [];
+            if (node.photos) {
+                for (let p of node.photos) {
+                    if (p.isImageRef && p.uuid) {
+                        uuids.push(p.uuid);
+                    }
+                }
+            }
+            if (node.children) {
+                for (let child of node.children) {
+                    uuids.push(...collectAllPhotoUUIDs(child));
+                }
+            }
+            return uuids;
+        }
+
+        function deleteNode(nodeId) {
+            const node = findNodeById(treeData, nodeId);
+            if (!node) return;
+            const parent = findParent(treeData, nodeId);
+            if (!parent) return;
+            const name = getDisplayName(node);
+            if (!confirm(`确定要删除「${name}」及其所有子项吗？\n（关联的图片也会被删除）`)) return;
+
+            const uuids = collectAllPhotoUUIDs(node);
+            if (uuids.length > 0) {
+                Promise.all(uuids.map(uuid => deleteImageFromDB(uuid).catch(() => {})))
+                    .then(() => {
+                        console.log(`🗑 已删除 ${uuids.length} 张关联图片`);
+                    })
+                    .catch(() => {});
+            }
+
+            parent.children = parent.children.filter(c => c.id !== nodeId);
+            saveAndRefresh();
+            toast(`🗑 已删除「${name}」及 ${uuids.length} 张图片`);
+            if (selectedNode && selectedNode.id === nodeId) { selectedNode = parent;
+                showTaxonContent(parent); } else if (selectedNode) { showTaxonContent(selectedNode); } else { showTaxonContent(
+                    treeData); }
+        }
+
+        // ============================================================
+        // 📄 物种详情（使用事件委托）
+        // ============================================================
+
+        function showSpeciesDetail(node) {
+            if (!node) return;
+            const modal = document.getElementById('speciesModal');
+            const body = document.getElementById('speciesDetailBody');
+
+            const latin = node.latinName || '';          // 只取拉丁学名
+            const authorHTML = node.authors ? ' <span style="font-weight:400;color:#888;">' + node.authors + '</span>' : '';
+            const displayLatin = latin ? `<i>${latin}</i>` : (node.name || '');  // 有拉丁名就斜体，否则普通显示
+
+            let infoItems = [];
+            if (node.synonyms && node.synonyms.length) infoItems.push({ label: '异名', value: node.synonyms.join('；') });
+            if (node.distribution) infoItems.push({ label: '分布', value: node.distribution });
+            if (node.habitat) infoItems.push({ label: '生境', value: node.habitat });
+
+            let infoGrid = '';
+            if (infoItems.length) {
+                infoGrid = '<div class="detail-grid">' +
+                    infoItems.map(item =>
+                        `<div class="item"><strong>${item.label}</strong><span>${item.value}</span></div>`
+                    ).join('') +
+                    '</div>';
+            }
+
+            let photoHTML = '';
+            if (node.photos && node.photos.length) {
+                photoHTML = '<h3>📷 相册</h3><div class="photo-strip">';
+                for (let p of node.photos) {
+                    const src = p.src || '';
+                    const caption = p.caption || '';
+                    const isRef = p.isImageRef || false;
+                    const uuid = p.uuid || '';
+                    if (isRef && uuid) {
+                        photoHTML +=
+                            `<img data-img-uuid="${uuid}" data-caption="${caption}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${caption || '图片'}" />`;
+                    } else if (src) {
+                        photoHTML +=
+                            `<img src="${src}" data-src="${src}" data-caption="${caption}" alt="${caption || '图片'}" />`;
+                    }
+                }
+                photoHTML += '</div>';
+            }
+
+            let descHTML = '';
+            if (node.diagnosis) descHTML +=
+                `<h3>🔍 鉴定要点</h3><div class="markdown-body">${marked.parse(node.diagnosis)}</div>`;
+            if (node.description) descHTML +=
+                `<h3>📄 物种描述</h3><div class="markdown-body">${marked.parse(node.description)}</div>`;
+            
+            let refHTML = '';
+            if (node.references && node.references.length) {
+                refHTML = '<h3>📚 参考文献</h3><ol class="ref-list">' +
+                    node.references.map(r => `<li>${r}</li>`).join('') +
+                    '</ol>';
+            }
+
+            // 获取面包屑路径
+            const taxonPath = getTaxonPath(node, treeData);
+            let breadcrumbHTML = '';
+            if (taxonPath.length > 0) {
+                breadcrumbHTML = `<div class="breadcrumb" style="font-size:0.85rem;color:#888;margin-top:4px;">${taxonPath.join(' › ')}</div>`;
+            }
+
+            body.innerHTML = `
+                <div class="modal-header">
+                    <h2>${node.commonName || node.name || '未命名物种'}</h2>
+                    <div class="sub">${displayLatin}${authorHTML}</div>
+                    ${breadcrumbHTML}
+                </div>
+                <div class="modal-body">
+                    ${infoGrid}
+                    ${photoHTML}
+                    ${descHTML}
+                    ${refHTML}
+                    ${!photoHTML && !descHTML && !refHTML ? '<p style="color:#999;">该物种暂无详细信息</p>' : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-cancel" onclick="document.getElementById('speciesModal').classList.remove('active')">关闭</button>
+                    ${isEditMode ? `<button class="btn-save" onclick="document.getElementById('speciesModal').classList.remove('active'); openEditor(findNodeById(treeData, '${node.id}'))">✎ 编辑</button>` : ''}
+                </div>
+            `;
+
+            modal.classList.add('active');
+
+            loadImageRefs(body);
+
+            modal.removeEventListener('click', modalPhotoClickHandler);
+            modal.addEventListener('click', modalPhotoClickHandler);
+        }
+
+        function showContentDetail(node) {
+            if (!node) return;
+            showModal({
+                title: '📝 笔记详情',
+                fields: [],
+                content: `
+                <div style="padding:6px 0;line-height:1.8;">
+                    ${marked.parse(node.html || '')}
+                </div>`,
+                hideFooter: true
+            });
+        }
+
+        // ============================================================
+        // 🧩 通用模态框（支持剪贴板粘贴按钮 + 图片排序）
+        // ============================================================
+
+        function showModal(options) {
+            const overlay = document.getElementById('genericModal');
+            const body = document.getElementById('modalBody');
+
+            let fieldsHTML = '';
+            if (options.fields) {
+                for (let f of options.fields) {
+                    const val = f.value || '';
+                    const placeholder = f.placeholder || '';
+                    const rows = f.rows || 3;
+                    const withPaste = f.withPaste || false;
+                    const isImageField = f.isImageField || false;
+                    let pasteBtn = '';
+                    if (withPaste) {
+                        pasteBtn = `
+                            <div class="paste-area">
+                                <button class="paste-btn" onclick="pasteImageFromClipboard('modal_${f.id}')">📋 从剪贴板粘贴图片</button>
+                                <span style="font-size:0.75rem;color:#999;">（将自动压缩并存入 IndexedDB）</span>
+                            </div>
+                        `;
+                    }
+                    let imageFieldAttr = isImageField ? ' data-image-field="true"' : '';
+                    if (f.type === 'textarea') {
+                        fieldsHTML += `
+                            <div class="form-group">
+                                <label>${f.label}</label>
+                                <textarea id="modal_${f.id}" placeholder="${placeholder}" rows="${rows}"${imageFieldAttr}>${val}</textarea>
+                                ${pasteBtn}
+                            </div>
+                        `;
+                    } else {
+                        fieldsHTML += `
+                            <div class="form-group">
+                                <label>${f.label}</label>
+                                <input type="text" id="modal_${f.id}" placeholder="${placeholder}" value="${val}" />
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            let contentHTML = options.content || '';
+
+            body.innerHTML = `
+                <div class="modal-header">
+                    <h2>${options.title || '编辑'}</h2>
+                </div>
+                <div class="modal-body">
+                    ${fieldsHTML}
+                    ${contentHTML}
+                </div>
+                ${options.hideFooter ? '' : `
+                <div class="modal-footer">
+                    <button class="btn-cancel" onclick="closeModal()">取消</button>
+                    <button class="btn-save" id="modalSaveBtn">💾 保存</button>
+                </div>
+                `}
+            `;
+
+            overlay.classList.add('active');
+
+            if (!options.hideFooter) {
+                setTimeout(() => {
+                    initImageSortable(document.getElementById('modalContainer'));
+                }, 50);
+            }
+
+            if (!options.hideFooter) {
+                document.getElementById('modalSaveBtn').onclick = function() {
+                    const data = {};
+                    if (options.fields) {
+                        for (let f of options.fields) {
+                            const el = document.getElementById('modal_' + f.id);
+                            if (el) data[f.id] = el.value;
+                        }
+                    }
+                    if (options.onSave) options.onSave(data);
+                    closeModal();
+                };
+            }
+
+            document.getElementById('modalCloseBtn').onclick = function() { closeModal(); if (options.onClose) options
+                    .onClose(); };
+            overlay.onclick = function(e) { if (e.target === this) { closeModal(); if (options.onClose) options.onClose(); } };
+        }
+
+        function closeModal() {
+            document.getElementById('genericModal').classList.remove('active');
+            if (window._imageSortables) {
+                window._imageSortables.forEach(s => s.destroy());
+                window._imageSortables = [];
+            }
+        }
+
+        // ============================================================
+        // 💾 数据持久化（统一版本管理）
+        // ============================================================
+
+        function saveData() {
+            // 确保 treeData 中有版本号
+            if (treeData) {
+                treeData.version = CURRENT_VERSION;
+            }
+            localStorage.setItem('taxonomyNotesData', JSON.stringify(treeData));
+            // 不再单独存储 idCounter，使用 rebuildIdCounter 恢复
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('taxonomyNotesData');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // 确保版本存在，若无则设为 '1.0'，然后迁移
+                    if (!parsed.version) {
+                        parsed.version = '1.0';
+                    }
+                    // 迁移数据（兼容旧版）
+                    parsed.version = migrateData(parsed);
+                    treeData = parsed;
+                    // 重建 idCounter（不依赖 localStorage）
+                    idCounter = rebuildIdCounter(treeData);
+                    return true;
+                } catch (e) {
+                    console.warn('数据加载失败，将使用默认数据', e);
+                }
+            }
+            return false;
+        }
+
+        // ===== 版本迁移系统（P0-1 改进） =====
+        function migrateData(data) {
+            const version = data.version || '1.0';
+            let migrated = data;
+
+            // ---- 未来迁移规则（留空） ----
+            // if (version === '1.0') { ... 迁移到 1.2 }
+            // if (version === '1.2') { ... 迁移到 2.0 }
+            // ... 更多迁移
+
+            // 当前所有版本都执行字段补全（向下兼容）
+            migrated = ensureAllFields(migrated);
+
+            // 更新版本号为最新
+            migrated.version = CURRENT_VERSION;
+            return migrated.version; // 返回最新版本
+        }
+
+        // 补全缺失字段（确保所有节点结构完整）
+        function ensureAllFields(data) {
+            function walk(node) {
+                if (!node) return;
+                node.photos ||= [];
+                node.children ||= [];
+                node.type ||= 'taxon';
+
+                if (node.type === 'species') {
+                    node.commonName ||= '';
+                    node.latinName ||= '';
+                    node.authors ||= '';
+                    node.distribution ||= '';
+                    node.habitat ||= '';
+                    node.diagnosis ||= '';
+                    node.description ||= '';
+                    node.synonyms ||= [];
+                    node.references ||= [];
+                }
+                if (node.type === 'content') {
+                    node.html ||= '';
+                }
+                if (node.type === 'taxon') {
+                    node.name ||= '未命名分类群';
+                }
+
+                if (node.children) {
+                    for (let child of node.children) {
+                        walk(child);
+                    }
+                }
+            }
+            walk(data);
+            return data;
+        }
+
+        function saveAndRefresh() {
+            saveData();
+            renderTree();
+            if (selectedNode) {
+                const refreshed = findNodeById(treeData, selectedNode.id);
+                if (refreshed) { selectedNode = refreshed;
+                    showTaxonContent(refreshed); } else { selectedNode = treeData;
+                    showTaxonContent(treeData); }
+            }
+        }
+
+        // ============================================================
+        // 📤 导入导出（含 IndexedDB 图片 + UUID 冲突处理 + 版本兼容）
+        // ============================================================
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.treeData || !data.treeData.id) {
+                        toast('❌ 无效的数据格式：缺少 treeData');
+                        return;
+                    }
+
+                    // ---- 版本迁移 ----
+                    let importedTree = data.treeData;
+                    if (!importedTree.version) importedTree.version = '1.0';
+                    const newVersion = migrateData(importedTree);
+                    importedTree.version = newVersion; // 更新为最新
+
+                    // ---- UUID 冲突处理 ----
+                    let existingUUIDs = new Set();
+                    try {
+                        const existing = await getAllImagesFromDB();
+                        existingUUIDs = new Set(existing.map(entry => entry.id));
+                    } catch (err) {
+                        console.warn('获取已有图片列表失败', err);
+                    }
+
+                    const conflictMap = {};
+                    const imageEntries = data.images || {};
+                    for (let [uuid, base64] of Object.entries(imageEntries)) {
+                        if (existingUUIDs.has(uuid)) {
+                            const newUuid = generateUUID();
+                            conflictMap[uuid] = newUuid;
+                            console.log(`⚠️ UUID 冲突: ${uuid} -> ${newUuid}`);
+                        }
+                    }
+
+                    if (Object.keys(conflictMap).length > 0) {
+                        const jsonStr = JSON.stringify(importedTree);
+                        let updatedStr = jsonStr;
+                        for (let [oldUuid, newUuid] of Object.entries(conflictMap)) {
+                            updatedStr = updatedStr.split(`[img:${oldUuid}]`).join(`[img:${newUuid}]`);
+                        }
+                        importedTree = JSON.parse(updatedStr);
+                        toast(`🔄 检测到 ${Object.keys(conflictMap).length} 个UUID冲突，已自动重新生成`);
+                    }
+
+                    // ---- 恢复图片到 IndexedDB ----
+                    let savedCount = 0;
+                    for (let [uuid, base64] of Object.entries(imageEntries)) {
+                        try {
+                            const finalUuid = conflictMap[uuid] || uuid;
+                            const response = await fetch(base64);
+                            const blob = await response.blob();
+                            await saveImageToDB(finalUuid, blob);
+                            savedCount++;
+                        } catch (err) {
+                            console.warn('图片恢复失败', uuid, err);
+                        }
+                    }
+
+                    // ---- 更新数据 ----
+                    treeData = importedTree;
+                    // 重建 idCounter
+                    idCounter = rebuildIdCounter(treeData);
+
+                    saveData();
+                    selectedNode = treeData;
+                    renderTree();
+                    showTaxonContent(treeData);
+
+                    // 更新最后导出时间（导入也算一次安全操作）
+                    localStorage.setItem('lastExportTime', Date.now().toString());
+
+                    toast(`✅ 导入成功！版本 ${data.version || '1.0'} → ${importedTree.version}，恢复 ${savedCount} 张图片`);
+                } catch (err) {
+                    console.error('导入失败:', err);
+                    toast('❌ 导入失败: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ============================================================
+        // 📤 导出（统一使用 treeData.version）
+        // ============================================================
+
+        async function exportData() {
+            try {
+                const allImages = await getAllImagesFromDB();
+                const imageMap = {};
+                for (let entry of allImages) {
+                    try {
+                        const base64 = await blobToBase64(entry.blob);
+                        imageMap[entry.id] = base64;
+                    } catch (e) {
+                        console.warn('图片转换失败', entry.id, e);
+                    }
+                }
+                // 使用 treeData.version 作为导出版本
+                const exportVersion = treeData.version || CURRENT_VERSION;
+                const exportObj = {
+                    treeData: treeData,
+                    images: imageMap,
+                    version: exportVersion
+                };
+                const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `分类学笔记_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+
+                // 记录导出时间
+                localStorage.setItem('lastExportTime', Date.now().toString());
+                toast(`📥 数据已导出（版本 ${exportVersion}，含 ${Object.keys(imageMap).length} 张图片）`);
+
+                setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+            } catch (err) {
+                console.error(err);
+                toast('❌ 导出失败: ' + err.message);
+            }
+        }
+
+        // ============================================================
+        // 🔄 重置
+        // ============================================================
+
+        function resetAll() {
+            if (!confirm('⚠️ 确定要重置所有数据吗？此操作不可撤销！')) return;
+            treeData = deepClone(DEFAULT_DATA);
+            treeData.version = CURRENT_VERSION;
+            selectedNode = treeData;
+            idCounter = 1000;
+            saveData();
+            getAllImagesFromDB().then(entries => {
+                for (let entry of entries) {
+                    deleteImageFromDB(entry.id).catch(() => {});
+                }
+            }).catch(() => {});
+            renderTree();
+            showTaxonContent(treeData);
+            toast('🗑 已重置所有数据');
+        }
+
+        // ============================================================
+        // 📐 左栏宽度拖拽
+        // ============================================================
+
+        function setupSidebarResizer() {
+            const resizer = document.getElementById('sidebarResizer');
+            const sidebar = document.getElementById('sidebar');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', function(e) {
+                isResizing = true;
+                resizer.classList.add('active');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                document.addEventListener('mousemove', onResize);
+                document.addEventListener('mouseup', onResizeEnd);
+                e.preventDefault();
+            });
+
+            function onResize(e) {
+                if (!isResizing) return;
+                const rect = sidebar.getBoundingClientRect();
+                const newWidth = e.clientX - rect.left;
+                if (newWidth >= 180 && newWidth <= 600) {
+                    sidebar.style.width = newWidth + 'px';
+                    document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+                }
+            }
+
+            function onResizeEnd() {
+                isResizing = false;
+                resizer.classList.remove('active');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.removeEventListener('mousemove', onResize);
+                document.removeEventListener('mouseup', onResizeEnd);
+                const w = sidebar.style.width;
+                if (w) localStorage.setItem('sidebarWidth', w);
+            }
+
+            const savedWidth = localStorage.getItem('sidebarWidth');
+            if (savedWidth) {
+                const w = parseInt(savedWidth);
+                if (w >= 180 && w <= 600) {
+                    sidebar.style.width = w + 'px';
+                    document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+                }
+            }
+        }
+
+        // ============================================================
+        // 📢 Toast（支持样式扩展）
+        // ============================================================
+
+        let toastTimer = null;
+
+        function toast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            el.classList.remove('warning', 'info');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // ============================================================
+        // 🧩 全局异常处理
+        // ============================================================
+
+        function setupGlobalErrorHandling() {
+            window.onerror = function(message, source, lineno, colno, error) {
+                console.error('【全局错误】', message, source, lineno, colno, error);
+                toast('⚠️ 发生未知错误，请按 F12 查看控制台详情');
+                try {
+                    const log = JSON.parse(localStorage.getItem('errorLog') || '[]');
+                    log.push({
+                        time: new Date().toISOString(),
+                        message: String(message),
+                        source: source || '',
+                        lineno: lineno || 0,
+                        colno: colno || 0,
+                        stack: error ? error.stack : ''
+                    });
+                    if (log.length > 50) log.shift();
+                    localStorage.setItem('errorLog', JSON.stringify(log));
+                } catch (e) { /* 忽略日志写入错误 */ }
+                return true;
+            };
+
+            window.onunhandledrejection = function(event) {
+                console.error('【未处理的Promise拒绝】', event.reason);
+                toast('⚠️ 发生异步错误，请按 F12 查看控制台详情');
+                try {
+                    const log = JSON.parse(localStorage.getItem('errorLog') || '[]');
+                    log.push({
+                        time: new Date().toISOString(),
+                        type: 'unhandledrejection',
+                        reason: String(event.reason)
+                    });
+                    if (log.length > 50) log.shift();
+                    localStorage.setItem('errorLog', JSON.stringify(log));
+                } catch (e) { /* 忽略 */ }
+                event.preventDefault();
+            };
+
+            window.addEventListener('error', function(e) {
+                if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'SCRIPT')) {
+                    console.warn('资源加载失败:', e.target.src || e.target.href);
+                    return;
+                }
+                if (!e.message) return;
+                toast('⚠️ 页面发生错误，请查看控制台');
+            }, true);
+        }
+
+        // ============================================================
+        // 📌 备份提醒（P0-2 改进：首次启动用模态框）
+        // ============================================================
+
+        let backupCheckDone = false;
+
+        function checkBackupReminder() {
+            if (backupCheckDone) return;
+            backupCheckDone = true;
+
+            const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+            if (!hasSeenWelcome) {
+                // 第一次启动：弹模态框
+                showModal({
+                    title: '🌿 欢迎使用 DHI 分类学笔记',
+                    content: `
+                        <p style="font-size:1rem;line-height:1.8;">
+                            数据保存在本地浏览器中，<strong>请定期导出 JSON 备份</strong>，以防缓存清理导致数据丢失。
+                        </p>
+                        <p style="margin-top:12px;color:#666;">
+                            建议每次重要更新后点击「导出JSON」保存。
+                        </p>
+                        <div style="margin-top:20px;text-align:center;">
+                            <button class="btn-save" onclick="closeModal();" style="font-size:1rem;padding:8px 32px;">知道了</button>
+                        </div>
+                    `,
+                    hideFooter: true
+                });
+                localStorage.setItem('hasSeenWelcome', 'true');
+                localStorage.setItem('lastBackupCheck', Date.now().toString());
+                return;
+            }
+
+            // 非首次：检查是否超过7天未备份
+            const lastExport = localStorage.getItem('lastExportTime');
+            if (lastExport) {
+                const days = (Date.now() - parseInt(lastExport)) / (1000 * 60 * 60 * 24);
+                if (days > 7) {
+                    const toastEl = document.getElementById('toast');
+                    toastEl.classList.add('warning');
+                    toast('⚠️ 已超过7天未备份数据，建议点击「导出JSON」保存。');
+                    setTimeout(() => {
+                        toastEl.classList.remove('warning');
+                    }, 4000);
+                }
+            } else {
+                // 从未导出过，温和提醒
+                const lastCheck = localStorage.getItem('lastBackupCheck');
+                if (!lastCheck || (Date.now() - parseInt(lastCheck)) > 24 * 60 * 60 * 1000) {
+                    toast('💡 提示：点击「导出JSON」可备份所有数据（含图片）');
+                    localStorage.setItem('lastBackupCheck', Date.now().toString());
+                }
+            }
+        }
+
+        // ===== 退出前提醒 =====
+        let hasShownExitWarning = false;
+
+        function setupBeforeUnload() {
+            window.addEventListener('beforeunload', function(e) {
+                if (hasShownExitWarning) return;
+                const lastExport = localStorage.getItem('lastExportTime');
+                if (lastExport) {
+                    const days = (Date.now() - parseInt(lastExport)) / (1000 * 60 * 60 * 24);
+                    if (days > 7) {
+                        hasShownExitWarning = true;
+                        e.preventDefault();
+                        e.returnValue = '您已超过7天未备份数据，建议导出JSON备份后再离开。';
+                        setTimeout(() => { hasShownExitWarning = false; }, 2000);
+                        return;
+                    }
+                }
+                if (!lastExport) {
+                    hasShownExitWarning = true;
+                    e.preventDefault();
+                    e.returnValue = '您尚未导出过数据，建议备份后再离开。';
+                    setTimeout(() => { hasShownExitWarning = false; }, 2000);
+                }
+            });
+        }
+
+        // ============================================================
+        // 🚀 初始化
+        // ============================================================
+
+        function init() {
+            setupGlobalErrorHandling();
+
+            if (!loadData()) {
+                treeData = deepClone(DEFAULT_DATA);
+                treeData.version = CURRENT_VERSION;
+                selectedNode = treeData;
+                idCounter = 1000;
+                saveData();
+            } else {
+                if (!treeData || !treeData.id) {
+                    treeData = deepClone(DEFAULT_DATA);
+                    treeData.version = CURRENT_VERSION;
+                    saveData();
+                }
+                // 确保所有字段完整（兼容旧数据）
+                ensureAllFields(treeData);
+                // 确保版本号
+                treeData.version = CURRENT_VERSION;
+                saveData();
+                selectedNode = treeData;
+            }
+
+            renderTree();
+            showTaxonContent(treeData);
+            setupSearch();
+            setupLightbox();
+            setupSidebarResizer();
+
+            const savedSize = localStorage.getItem('cardSize') || 'medium';
+            setCardSize(savedSize);
+
+            if (localStorage.getItem('editMode') === 'true') {
+                setTimeout(() => { if (!isEditMode) toggleEditMode(); }, 100);
+            }
+
+            // ---- 备份提醒（首次弹模态框，后续 Toast） ----
+            setTimeout(checkBackupReminder, 600);
+
+            // ---- 退出前提醒 ----
+            setupBeforeUnload();
+
+            document.getElementById('modalCloseBtn').onclick = closeModal;
+            document.getElementById('speciesModalClose').onclick = function() {
+                document.getElementById('speciesModal').classList.remove('active');
+            };
+            document.getElementById('speciesModal').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault();
+                    toggleEditMode(); }
+            });
+
+            console.info("DHI Taxonomic Notebook v1.0.0");
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
