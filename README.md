@@ -20,6 +20,11 @@ DHI Taxonomic Notebook / 虹蘅馆分类学笔记
 Feedback is greatly appreciated.
 </p>
 
+<p align="center">
+  <a href="https://Domus-Herbarum-Iridescentium.github.io/DHI-Taxonomic-Notebook/">
+    🌿 点击体验在线版！
+  </a>
+</p>
 
 A lightweight, offline‑first taxonomy management tool for naturalists and taxonomists. 
  
@@ -105,7 +110,19 @@ DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数
 
 > DHI Taxonomic Notebook 是一个完全离线的浏览器应用，无需安装软件，也无需服务器。
 
-### 方法一：直接下载（推荐）
+### 方法一：在线体验
+
+[https://Domus-Herbarum-Iridescentium.github.io/DHI-Taxonomic-Notebook/](https://Domus-Herbarum-Iridescentium.github.io/DHI-Taxonomic-Notebook/)
+
+无需安装，点击即可体验。
+
+> Note: All data is stored locally in your browser and will not be uploaded.
+>
+> 注意：所有数据均保存在浏览器本地，不会上传。
+
+---
+
+### 方法二：直接下载（推荐）
 
 1. 在**Releases**页面下载最新版本；
 
@@ -117,7 +134,7 @@ DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数
 
 ---
 
-### 方法二：Git 克隆
+### 方法三：Git 克隆
 
 ```bash
 git clone https://github.com/Domus-Herbarum-Iridescentium/DHI-Taxonomic-Notebook.git
