@@ -1,16 +1,31 @@
-> v1.0.0 is the first public release.
+<p align="center">
+  <img src="assets/logo2.svg" width="400" alt="DHI Taxonomic Notebook Logo2">
+</p>
 
-> Bug reports, feature requests, and suggestions are always welcome.
+<h1 align="center">
+DHI Taxonomic Notebook / 虹蘅馆分类学笔记
+</h1>
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Offline](https://img.shields.io/badge/offline-ready-orange)
-![HTML](https://img.shields.io/badge/html-✓-purple)
+<p align="center">
+ 
+  <img alt="Version" src="https://img.shields.io/badge/version-v1.0.0-blue">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Browser-orange">
+  <img alt="Offline" src="https://img.shields.io/badge/offline-Yes-success">
+  
+</p>
 
-# DHI Taxonomic Notebook / 虹蘅馆分类学笔记
+<p align="center">
+<b> 🎉 First public release (v1.0.0)</b><br>
+Feedback is greatly appreciated.
+</p>
+
+
 A lightweight, offline‑first taxonomy management tool for naturalists and taxonomists. 
  
 一款专为分类学研究设计的离线知识管理工具。
+
+---
 
 <p align="center">
   <img src="Screenshots/Overview.png" alt="Overview" width="90%">
@@ -43,10 +58,7 @@ A lightweight, offline‑first taxonomy management tool for naturalists and taxo
 
 - **团队协作者**：通过 JSON 文件共享数据，互相交流与学习；
 
-DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数字笔记。
-
-> From personal study to formal research compilation,
-> it grows with you every step of the way.
+DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数字笔记 ~
 
 ## 主要特点
 
@@ -91,23 +103,25 @@ DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数
 
 ## 快速开始
 
-> 本项目为纯前端离线应用，无需安装任何软件，也无需服务器！
+> DHI Taxonomic Notebook 是一个完全离线的浏览器应用，无需安装软件，也无需服务器。
 
 ### 方法一：直接下载（推荐）
 
-1. 下载本项目（Code → Download ZIP）。
+1. 在**Releases**页面下载最新版本；
 
-2. 解压后，直接使用 Chrome、Edge 或 Firefox 打开 `index.html`。
+2. 解压 ZIP 压缩包；
 
-3. 开始使用！
+3. 用 Chrome、Edge 或 Firefox 浏览器打开`index.html`；
+
+4. 即刻开始使用！
 
 ---
 
 ### 方法二：Git 克隆
 
 ```bash
-git clone https://github.com/your-username/taxonomic-notebook.git
-cd taxonomic-notebook
+git clone https://github.com/Domus-Herbarum-Iridescentium/DHI-Taxonomic-Notebook.git
+cd DHI-Taxonomic-Notebook
 ```
 
 随后直接打开：
@@ -128,13 +142,7 @@ index.html
 - ✅ Microsoft Edge
 - ✅ Mozilla Firefox
 
-由于项目依赖 IndexedDB，不建议使用 Internet Explorer。
-
----
-
-### 在线体验
-
-[https://Domus-Herbarum-Iridescentium.github.io/DHI-Taxonomic-Notebook/](https://Domus-Herbarum-Iridescentium.github.io/DHI-Taxonomic-Notebook/)
+不建议使用 Internet Explorer。
 
 ## 数据安全
 
@@ -183,10 +191,11 @@ index.html
 - **marked.js** —— Markdown 渲染
 - **Sortable.js** —— 拖拽排序
 
-示例图片来源：
+示例图片来源（仅用于演示）：
 
 - PPBC 中国植物图像库
-- 自然爱好者与园艺社区（仅用于演示）
+- iNaturalist
+- 其他自然爱好者与园艺社群
 
 ## 反馈
 
@@ -221,3 +230,13 @@ index.html
 ### 是否支持移动端？
 
 支持浏览和基础编辑，但建议使用桌面浏览器获得最佳体验。
+
+---
+
+<p align="center">
+<b>Happy botanizing! 🌿</b><br>
+</p>
+
+<p align="center">
+  <img src="assets/logo3.svg" width="400" alt="DHI Taxonomic Notebook Logo3">
+</p>
