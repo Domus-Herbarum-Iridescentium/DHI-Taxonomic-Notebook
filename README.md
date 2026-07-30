@@ -16,8 +16,8 @@ DHI Taxonomic Notebook / 虹蘅馆分类学笔记
 </p>
 
 <p align="center">
-<b> v1.1.0</b><br>
-<b> Improved Reading Experience & Taxonomic Workflow</b><br>
+<b> Updating: v1.1.0</b><br>
+Improved Reading Experience & Taxonomic Workflow
 </p>
 
 <p align="center">
@@ -34,11 +34,6 @@ A lightweight, offline‑first taxonomy management tool for naturalists and taxo
 
 <p align="center">
   <img src="Screenshots/Overview.png" alt="Overview" width="90%">
-</p>
-
-
-<p align="center">
-  <img src="Screenshots/Search.gif" alt="Search" width="90%">
 </p>
 
 ## 项目简介
@@ -98,6 +93,10 @@ DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数
 ### 图片管理
 
 支持 URL 导入、剪贴板粘贴、拖拽排序及大图预览；图片自动保存在本地数据库。
+
+<p align="center">
+  <img src="Screenshots/Search.gif" alt="Search" width="90%">
+</p>
 
 ### 数据导入/导出
 支持完整导出为 JSON 文件（含图片），支持导入恢复，方便备份、迁移与分享。
