@@ -16,8 +16,8 @@ DHI Taxonomic Notebook / 虹蘅馆分类学笔记
 </p>
 
 <p align="center">
-<b> 🎉 First public release (v1.0.0)</b><br>
-Feedback is greatly appreciated.
+<b> v1.1.0</b><br>
+<b> Improved Reading Experience & Taxonomic Workflow</b><br>
 </p>
 
 <p align="center">
@@ -98,10 +98,6 @@ DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数
 ### 图片管理
 
 支持 URL 导入、剪贴板粘贴、拖拽排序及大图预览；图片自动保存在本地数据库。
-
-<p align="center">
-  <img src="Screenshots/lightbox.png" alt="Lightbox" width="90%">
-</p>
 
 ### 数据导入/导出
 支持完整导出为 JSON 文件（含图片），支持导入恢复，方便备份、迁移与分享。
@@ -188,12 +184,26 @@ index.html
 - ✅ 图片管理（IndexedDB）
 - ✅ 数据导入 / 导出（含图片）
 
-### 计划
+### v1.1.0
 
-- ⏳ 分类路径（Breadcrumb）
+- ✅ 编辑体验优化
+- ✅ 分类路径（Breadcrumb）
+- ✅ 分类群 / 物种搜索增强
+- ✅ 拉丁学名与异名检索
+- ✅ 图片浏览体验优化
+- ✅ 异名列表管理
+- ✅ 物种详情结构优化
+- ✅ 阅读模式切换
+- ✅ 拖拽系统优化
+- ✅ 数据迁移与稳定性增强
+
+### 后续计划
+
 - ⏳ 分类关系（Relation）管理优化
-- ⏳ 更多搜索选项
-- ⏳ 更多图片批量操作
+- ⏳ 更强的高级搜索与筛选
+- ⏳ 分类单元之间的引用关系
+- ⏳ 更好的图片浏览
+- ⏳ 文献引用管理
 
 ## 协议
 
