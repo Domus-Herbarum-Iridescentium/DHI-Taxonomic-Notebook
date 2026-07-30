@@ -87,7 +87,7 @@ DHI Taxonomic Notebook 都希望成为陪伴你积累分类学知识的一本数
 支持 Markdown 与 HTML，可用于保存文献摘录、分类讨论、观察记录及其他研究内容。
 
 <p align="center">
-  <img src="Screenshots/species.png" alt="Species" width="90%">
+  <img src="Screenshots/species.png" alt="Species" width="65%">
 </p>
 
 ### 图片管理
