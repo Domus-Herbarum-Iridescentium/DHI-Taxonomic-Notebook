@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="ProjectLogo3.svg" type="image/svg">
-    <title>DHI Taxonomic Notebook v1.0.0 (presented by [虹蘅馆 Domus Herbārum Īridēscentium])</title>
+    <title>DHI Taxonomic Notebook v1.1.0 by [虹蘅馆 Domus Herbārum Īridēscentium]</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js">
@@ -17,7 +17,29 @@
             box-sizing: border-box;
         }
         body {
-            font-family:
+            font-family:var(--font-ui);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            display: flex;
+            height: 100vh;
+            background: #f6f8fa;
+            overflow: hidden;
+        }
+        :root {
+            --primary: #9f8dc6;
+            --primary-light: #f2ecfa;
+            --primary-hover: #614d6d;
+            --border: #D9D5E4;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --radius: 10px;
+            --bg-card: #ffffff;
+            --sidebar-width: 400px;
+            --card-min: 190px;
+            --card-font-scale: 1;
+
+            /* ===== 字体系统 ===== */
+            --font-ui:
                 Inter,
                 -apple-system,
                 BlinkMacSystemFont,
@@ -30,24 +52,18 @@
                 "Helvetica Neue",
                 Arial,
                 sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            display: flex;
-            height: 100vh;
-            background: #f6f8fa;
-            overflow: hidden;
+
+            --font-serif:
+                "Georgia",
+                "Noto Serif SC",
+                "Songti SC",
+                "STSong",
+                "SimSun",
+                serif;
         }
-        :root {
-            --primary: #2c7a4a;
-            --primary-light: #e8f5e9;
-            --primary-hover: #1e5d36;
-            --border: #d0d7de;
-            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-            --radius: 10px;
-            --bg-card: #ffffff;
-            --sidebar-width: 360px;
-            --card-min: 190px;
+
+        body.serif-mode {
+            font-family: var(--font-serif);
         }
 
         /* ===== 侧边栏 ===== */
@@ -80,7 +96,7 @@
         }
         .sidebar-resizer:hover,
         .sidebar-resizer.active {
-            background: rgba(44, 122, 74, 0.25);
+            background: #eae6fa;
         }
         .sidebar-resizer::after {
             content: '';
@@ -89,7 +105,7 @@
             top: 0;
             width: 2px;
             height: 100%;
-            background: #d0d7de;
+            background: #eae6fa;
             opacity: 0;
             transition: opacity 0.2s;
         }
@@ -109,7 +125,7 @@
             gap: 6px;
         }
         .sidebar-header h2 {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             color: #1a2a3a;
             display: flex;
             align-items: center;
@@ -117,9 +133,15 @@
             font-weight: 600;
         }
         .sidebar-header h2 small {
-            font-size: 0.65rem;
-            font-weight: 400;
-            color: #999;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 2px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            letter-spacing: 0.4px;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8);
         }
         .toolbar {
             display: flex;
@@ -204,6 +226,24 @@
         .search-suggestions.active {
             display: block;
         }
+        .search-latin {
+            color: #777;
+            font-style: italic;
+            font-size: 0.85em;
+            margin-left: 6px;
+        }
+        .search-match-hint {
+            display: block;
+            font-size: 0.75rem;
+            color: #999;
+            font-style: italic;
+            margin-top: 1px;
+            padding-left: 6px;
+        }
+        .search-match-hint .synonym-icon {
+            font-style: normal;
+            margin-right: 2px;
+        }
         .suggestion-item {
             padding: 6px 12px;
             cursor: pointer;
@@ -270,11 +310,11 @@
             align-items: center;
             gap: 3px;
             transition: background 0.12s;
-            font-size: 0.88rem;
+            font-size: 1rem;
             position: relative;
         }
         .node-label:hover {
-            background: #f0f4f8;
+            background: #f2eff7;
         }
         .node-label .arrow {
             display: inline-block;
@@ -298,11 +338,11 @@
             flex-wrap: wrap;
         }
         .node-name .type-tag {
-            font-size: 0.55rem;
-            background: #e8ecf0;
+            font-size: 0.7rem;
+            background: #e8f0af;
             padding: 0 7px;
             border-radius: 10px;
-            color: #666;
+            color: #55873d;
             font-weight: 400;
         }
         .node-name .type-tag.species-tag {
@@ -310,8 +350,8 @@
             color: #1a56db;
         }
         .node-name .type-tag.content-tag {
-            background: #fef3c7;
-            color: #92400e;
+            background: #f7dff3;
+            color: #872b65;
         }
         .node-actions {
             display: none;
@@ -326,7 +366,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 0.7rem;
+            font-size: 0.9rem;
             padding: 1px 4px;
             border-radius: 4px;
             color: #666;
@@ -355,6 +395,21 @@
             background: var(--primary-light) !important;
             border-left: 3px solid var(--primary);
             padding-left: 4px;
+        }
+        /* ===== 空容器占位样式 ===== */
+        .empty-placeholder {
+            padding: 8px 12px;
+            border: 2px dashed #d0d7de;
+            border-radius: 6px;
+            color: #aaa;
+            font-size: 0.8rem;
+            text-align: center;
+            background: #fafbfc;
+            margin: 4px 0;
+            user-select: none;
+            pointer-events: none;
+            list-style: none;
+            transition: all 0.2s ease;
         }
 
         /* ===== 主区域 ===== */
@@ -466,11 +521,11 @@
             background: #f0f2f5;
         }
         .main-header .add-btns .add-taxon {
-            border-color: var(--primary);
-            color: var(--primary);
+            border-color: #55873d;
+            color: #55873d;
         }
         .main-header .add-btns .add-taxon:hover {
-            background: var(--primary-light);
+            background: #e8f0af;
         }
         .main-header .add-btns .add-species {
             border-color: #1a56db;
@@ -480,11 +535,11 @@
             background: #dbeafe;
         }
         .main-header .add-btns .add-content {
-            border-color: #b45309;
-            color: #b45309;
+            border-color: #872b65;
+            color: #872b65;
         }
         .main-header .add-btns .add-content:hover {
-            background: #fef3c7;
+            background: #f7dff3;
         }
 
         .main-content-wrap {
@@ -513,15 +568,20 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
+        :root {
+            --card-img-height: 110px;  /* 默认值，会被 JS 覆盖 */
+            --card-padding: 12px;      /* 默认值，会被 JS 覆盖 */
+        }
+
         .card-grid .card img {
             width: 100%;
-            height: 140px;
+            height: var(--card-img-height);
             object-fit: cover;
             display: block;
             background: #f0f2f5;
         }
         .card-grid .card .card-body {
-            padding: 8px 12px 10px;
+            padding: var(--card-padding);
             font-size: 0.85rem;
             color: #333;
         }
@@ -532,9 +592,10 @@
             align-items: center;
             gap: 4px;
             flex-wrap: wrap;
+            font-size: calc(1rem * var(--card-font-scale));
         }
         .card-grid .card .card-body .name .type-badge {
-            font-size: 0.55rem;
+            font-size: 0.7rem;
             font-weight: 400;
             background: #e8ecf0;
             padding: 0 8px;
@@ -546,21 +607,21 @@
             color: #1a56db;
         }
         .card-grid .card .card-body .name .type-badge.taxon {
-            background: #d1fae5;
-            color: #065f46;
+            background: #e8f0af;
+            color: #55873d;
         }
         .card-grid .card .card-body .name .type-badge.content {
-            background: #fef3c7;
-            color: #92400e;
+            background: #f7dff3;
+            color: #872b65;
         }
         .card-grid .card .card-body .sub {
-            font-size: 0.75rem;
+            font-size: calc(0.82rem * var(--card-font-scale));
             color: #888;
             margin-top: 2px;
         }
         .card-grid .card .card-body .sub .photo-count {
             color: #aaa;
-            font-size: 0.7rem;
+            font-size: calc(0.82rem * var(--card-font-scale));
         }
         .card-grid .card .card-actions {
             position: absolute;
@@ -607,7 +668,7 @@
             padding: 12px 16px;
         }
         .card-grid .card.content-card .card-body .content-html {
-            font-size: 0.88rem;
+            font-size: calc(0.9rem * var(--card-font-scale));
             line-height: 1.6;
             color: #444;
         }
@@ -645,19 +706,43 @@
             cursor: grabbing !important;
         }
 
+        /* ===== 滑块美化 ===== */
+        .size-control input[type="range"] {
+            accent-color: var(--primary);
+            height: 4px;
+            border-radius: 2px;
+            background: #d0d7de;
+            cursor: pointer;
+            transition: accent-color 0.2s;
+        }
+
+        .size-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f0f2f5;
+            padding: 2px 12px;
+            border-radius: 20px;
+            border: 1px solid #e0e4e8;
+        }
+
         /* ===== 模态框 ===== */
         .modal-overlay {
-            display: none;
             position: fixed;
             z-index: 1000;
             inset: 0;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            display: flex;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .modal-overlay.active {
-            display: flex;
+            opacity: 1;
+            pointer-events: auto;
         }
         .modal {
             background: #fff;
@@ -668,6 +753,17 @@
             overflow-y: auto;
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
             position: relative;
+            /* ===== 核心动画属性 ===== */
+            transform: scale(0.96);
+            opacity: 0;
+            will-change: transform, opacity;
+            transition:
+                transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .modal-overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
         }
         .modal-close {
             position: sticky;
@@ -888,6 +984,22 @@
         }
 
         /* ===== 物种详情弹窗 ===== */
+
+        /* 中文俗名 */
+        .species-detail .modal-header h2 {
+            font-size: 1.75rem;
+            color: #1a2a3a;
+            margin-bottom: 2px;
+            letter-spacing: 0.4px
+        }
+
+        /* 拉丁学名 */
+        .species-detail .modal-header .sub {
+            font-size: 1.25rem;
+            font-weight: 750;
+            color: #1a2a3a;
+        }
+
         .species-detail .detail-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -901,13 +1013,13 @@
         }
         .species-detail .detail-grid .item strong {
             display: block;
-            font-size: 0.7rem;
+            font-size: 1.1rem;
             color: #888;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
         .species-detail .detail-grid .item span {
-            font-size: 0.88rem;
+            font-size: 1rem;
         }
         .species-detail .photo-strip {
             display: flex;
@@ -916,8 +1028,8 @@
             padding: 6px 0;
         }
         .species-detail .photo-strip img {
-            width: 140px;
-            height: 100px;
+            width: 350px;
+            height: 250px;
             object-fit: cover;
             border-radius: 8px;
             cursor: pointer;
@@ -936,12 +1048,12 @@
             margin-bottom: 3px;
         }
         .species-detail .markdown-body h3 {
-            margin: 14px 0 4px;
-            font-size: 1rem;
-            color: #1a2a3a;
+            margin: 28px 0 14px;
+            font-size: 1.25rem;
+            color: #2d3338;
         }
         .species-detail .markdown-body p {
-            margin: 3px 0 8px;
+            margin: 4px 0 4px;
             line-height: 1.7;
         }
         .species-detail .markdown-body ul,
@@ -950,33 +1062,202 @@
             margin: 4px 0 10px;
         }
 
+        /* 异名折叠样式 */
+        .synonym-section {
+            width: 100%;
+        }
+
+        .synonym-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 0;
+            border-radius: 6px;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+
+        .synonym-header:hover {
+            color: var(--primary);
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .synonym-count {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        /* 图标基础样式 */
+        .collapse-icon {
+            font-size: 1.2rem;
+            transition: transform 0.25s ease;
+            margin-left: auto;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        /* 展开状态 - 旋转90度 */
+        .collapse-icon.open {
+            transform: rotate(90deg);
+        }
+
+        /* 内容容器 - 使用 grid 实现平滑展开 */
+        .synonym-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.25s ease;
+        }
+
+        .synonym-content > * {
+            overflow: hidden;
+        }
+
+        .synonym-content.open {
+            grid-template-rows: 1fr;
+        }
+
+        /* 异名列表样式 */
+        .species-detail .synonym-list {
+            margin: 4px 0 6px;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .species-detail .synonym-item {
+            line-height: 1.25;
+            padding-left: 1.2em;
+            position: relative;
+        }
+
+        .species-detail .synonym-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.7em;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        /* 异名容器跨两列 */
+        .species-detail .detail-grid .synonym-grid-item {
+            grid-column: 1 / -1;
+        }
+
+        /* 物种详情章节标题 */
+        .section-title {
+            position: relative;
+            margin: 28px 0 14px;
+            padding-top: 14px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3338;
+        }
+
+        /* 顶部绿色短线 */
+        .section-title::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 42px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--primary);
+        }
+
+        /* ===== 面包屑样式 ===== */
+        .breadcrumb {
+            font-size: 1rem;
+            color: #888;
+            margin-top: 4px;
+            
+        }
+
+        .breadcrumb-link {
+            cursor: pointer;
+            color: var(--primary-hover);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            transition: opacity 0.15s ease;
+        }
+
+        .breadcrumb-link:hover {
+            opacity: 0.75;
+        }
+
+        .breadcrumb-current {
+            color: #555;
+            font-weight: 500;
+        }
+
         /* ===== 灯箱 ===== */
         .lightbox {
-            display: none;
             position: fixed;
             z-index: 2000;
             inset: 0;
             background: rgba(0, 0, 0, 0.88);
+            display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+
         .lightbox.active {
-            display: flex;
+            opacity: 1;
+            pointer-events: auto;
         }
+
+        /* ---- 大图 ---- */
         .lightbox img {
             max-width: 92%;
             max-height: 82%;
             border-radius: 8px;
             object-fit: contain;
+            transform: scale(0.98);
+            opacity: 0;
+            will-change: transform, opacity;
+            transition:
+                transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+
+        .lightbox.active img {
+            transform: scale(1);
+            opacity: 1;
+        }
+
         .lightbox .caption {
             color: #ddd;
             margin-top: 12px;
             font-size: 0.95rem;
             max-width: 80%;
             text-align: center;
+            opacity: 0;
+            transform: translateY(6px);
+            will-change: transform, opacity;
+            transition:
+                opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition-delay: 40ms;
         }
+
+        .lightbox.active .caption {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .lightbox .close {
             position: absolute;
             top: 18px;
@@ -987,7 +1268,10 @@
             background: none;
             border: none;
             opacity: 0.7;
+            transition: opacity 150ms ease;
+            z-index: 10;
         }
+
         .lightbox .close:hover {
             opacity: 1;
         }
@@ -1081,7 +1365,7 @@
                 font-size: 0.95rem;
             }
             .node-label {
-                font-size: 0.78rem;
+                font-size: 0.96rem;
                 padding: 3px 4px;
             }
             .main {
@@ -1110,7 +1394,7 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-resizer" id="sidebarResizer"></div>
         <div class="sidebar-header">
-            <h2><img src="ProjectLogo3.svg" alt="DHI Logo" style="height: 5em; vertical-align: middle; margin-right: 0.2em;"> DHI Taxonomic Notebook<small>v1.0.0 (presented by 虹蘅馆)</small></h2>
+            <h2><img src="ProjectLogo3.svg" alt="DHI Logo" style="height: 5em; vertical-align: middle; margin-right: 0.2em;"> DHI Taxonomic Notebook<small>v1.1.0</small></h2>
         </div>
 
         <div class="search-container">
@@ -1119,11 +1403,11 @@
         </div>
 
         <div class="toolbar">
-            <button id="editToggleBtn" class="btn-primary" onclick="toggleEditMode()">✏️ 编辑模式</button>
-            <button onclick="exportData()">📥 导出JSON</button>
-            <button onclick="document.getElementById('importFile').click()">📤 导入JSON</button>
+            <button id="editToggleBtn" class="btn-primary" onclick="toggleEditMode()">✎ 编辑模式</button>
+            <button onclick="exportData()">⇧ 导出JSON</button>
+            <button onclick="document.getElementById('importFile').click()">⇩ 导入JSON</button>
             <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-            <button onclick="resetAll()" class="btn-danger" style="border-color:#d32f2f;color:#d32f2f;">🗑 重置</button>
+            <button onclick="resetAll()" class="btn-danger" style="border-color:#d32f2f;color:#d32f2f;">🗑︎ 重置</button>
         </div>
 
         <div class="tree-wrap" id="treeWrap">
@@ -1171,6 +1455,17 @@
     <div class="toast" id="toast"></div>
 
     <script>
+
+        function cleanupBlobURLs(root) {
+            if (!root) return;
+            root.querySelectorAll('[data-img-uuid], .img-preview').forEach(el => {
+                if (el._blobURL) {
+                    URL.revokeObjectURL(el._blobURL);
+                    el._blobURL = null;
+                }
+            });
+        }
+
         // ============================================================
         // 📦 IndexedDB 图片存储（绕开 localStorage 限制）
         // ============================================================
@@ -1179,7 +1474,9 @@
         const STORE_NAME = 'images';
         let db = null;
 
-        const CURRENT_VERSION = '1.0.0'
+        const CURRENT_VERSION = 'v1.1.0'
+
+        let _dbErrorShown = false;
 
         function openDB() {
             return new Promise((resolve, reject) => {
@@ -1196,10 +1493,14 @@
                     resolve(db);
                 };
                 request.onerror = function(e) {
-                    reject(e.target.error);
-                };
-            });
-        }
+                    if (!_dbErrorShown) {
+                toast('⚠️ 无法访问本地数据库，图片功能将不可用（请检查浏览器隐私/存储设置）');
+                _dbErrorShown = true;
+            }
+            reject(e.target.error);
+        };
+    });
+}
 
         function saveImageToDB(uuid, blob) {
             return openDB().then(db => {
@@ -1292,16 +1593,25 @@
                 if (el._blobURL && el.src && el.src.startsWith('blob:')) {
                     return;
                 }
+
+                const token = uuid;
+                el.dataset.loadingUuid = token;
+
                 try {
                     const blob = await getImageFromDB(uuid);
+
+                    if (el.dataset.loadingUuid !== token) return;
+                    if (!el.isConnected) return;
+
                     if (blob) {
                         setImageBlob(el, blob);
                     } else {
                         setImageBlob(el, null);
                     }
                 } catch (e) {
-                    console.warn('图片加载失败', uuid, e);
-                    setImageBlob(el, null);
+                    if (el.dataset.loadingUuid === token && el.isConnected) {
+                        setImageBlob(el, null);
+                    }
                 }
             }));
         }
@@ -1310,46 +1620,243 @@
         // 🖼 灯箱（使用 setImageBlob 管理 ObjectURL）
         // ============================================================
 
+        let lightboxState = {
+            images: [],        // [{ src, caption, uuid, isRef }]
+            currentIndex: 0,
+            isOpen: false
+        };
+
         let currentLightboxBlobURL = null;
 
-        function openLightbox(src, caption) {
-            if (currentLightboxBlobURL) {
-                URL.revokeObjectURL(currentLightboxBlobURL);
-                currentLightboxBlobURL = null;
+        /**
+         * 打开灯箱（支持单张或多张图片）
+         * @param {Array|Object|string} images - 图片数组 / 单张图片对象 / 图片URL字符串
+         * @param {number|string} indexOrCaption - 索引（数组模式）或标题（单图模式）
+         */
+        function openLightbox(images, indexOrCaption) {
+            // ----- 重置旧 token（防止旧 Promise 干扰） -----
+            const img = document.getElementById('lightboxImg');
+            if (img) img._loadingToken = null;
+
+            // ----- 兼容旧接口：单张图片 -----
+            if (typeof images === 'string') {
+                let caption = '';
+                let index = 0;
+                if (typeof indexOrCaption === 'string') {
+                    caption = indexOrCaption;
+                } else if (typeof indexOrCaption === 'number') {
+                    index = indexOrCaption;
+                }
+                images = [{ src: images, caption }];
+                indexOrCaption = 0;
             }
+
+            // 确保是数组
+            if (!Array.isArray(images)) {
+                images = [images];
+            }
+
+            // 过滤掉无效图片
+            const validImages = images.filter(img => img && (img.src || img.uuid));
+            if (validImages.length === 0) {
+                toast('❌ 没有可显示的图片');
+                return;
+            }
+
+            // 确定当前索引
+            let index = 0;
+            if (typeof indexOrCaption === 'number' && indexOrCaption >= 0 && indexOrCaption < validImages.length) {
+                index = indexOrCaption;
+            }
+
+            lightboxState.images = validImages;
+            lightboxState.currentIndex = index;
+            lightboxState.isOpen = true;
+
+            // 显示灯箱
+            const lb = document.getElementById('lightbox');
+            lb.classList.add('active');
+
+            // 渲染当前图片
+            renderLightboxImage(index);
+        }
+
+        /**
+         * 渲染灯箱中的指定图片
+         */
+        function renderLightboxImage(index) {
+            // ----- 如果灯箱已经关闭，直接返回 -----
+            if (!lightboxState.isOpen) return;
 
             const img = document.getElementById('lightboxImg');
             const cap = document.getElementById('lightboxCaption');
+            const images = lightboxState.images;
 
-            img.src = src;
-            cap.textContent = caption || '';
-            document.getElementById('lightbox').classList.add('active');
-
-            if (src && src.startsWith('blob:')) {
-                currentLightboxBlobURL = src;
+            if (!images || index < 0 || index >= images.length) {
+                return;
             }
-        }
 
-        function closeLightbox() {
+            // ----- 生成新的 token（用于竞态保护） -----
+            const token = Symbol();
+            img._loadingToken = token;
+
+            const imageData = images[index];
+
+            // 释放之前的 Blob URL
             if (currentLightboxBlobURL) {
                 URL.revokeObjectURL(currentLightboxBlobURL);
                 currentLightboxBlobURL = null;
             }
-            document.getElementById('lightbox').classList.remove('active');
+
+            // 重置图片状态
+            img.onload = null;
+            img.onerror = null;
+
+            // 显示占位图（防止闪烁）
+            img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+            // ----- 更新页码和说明 -----
+            const total = images.length;
+            cap.innerHTML = total > 1 
+                ? `📷︎ ${index + 1} / ${total}<br>${imageData.caption || ''}` 
+                : (imageData.caption || '');
+
+            // ----- 处理引用图片（从 IndexedDB 加载） -----
+            if (imageData.isRef && imageData.uuid) {
+                getImageFromDB(imageData.uuid)
+                    .then(blob => {
+                        // 竞态检查：灯箱是否仍打开 + token 是否匹配
+                        if (!lightboxState.isOpen || img._loadingToken !== token) return;
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            currentLightboxBlobURL = url;
+                            img.src = url;
+                        } else {
+                            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f2f5" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" font-size="16" fill="%23999" text-anchor="middle" dy=".3em"%E5%9B%BE%E7%89%87%E4%B8%8D%E5%AD%98%E5%9C%A8%3C/text%3E%3C/svg%3E';
+                            toast('⚠️ 图片数据已丢失');
+                        }
+                    })
+                    .catch(() => {
+                        if (!lightboxState.isOpen || img._loadingToken !== token) return;
+                        img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f2f5" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" font-size="16" fill="%23999" text-anchor="middle" dy=".3em"%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%A4%B1%E8%B4%A5%3C/text%3E%3C/svg%3E';
+                        toast('⚠️ 图片加载失败');
+                    });
+                return;
+            }
+
+            // ----- 处理普通图片（直接设置 src） -----
+            if (imageData.src) {
+                img.src = imageData.src;
+            } else {
+                img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f2f5" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" font-size="16" fill="%23999" text-anchor="middle" dy=".3em"%E6%97%A0%E6%95%88%E5%9B%BE%E7%89%87%3C/text%3E%3C/svg%3E';
+            }
         }
 
+        /**
+         * 上一张（非循环）
+         */
+        function prevImage() {
+            const total = lightboxState.images.length;
+            if (total <= 1) return;
+            let newIndex = lightboxState.currentIndex - 1;
+            if (newIndex < 0) {
+                // 第一张，无动作
+                return;
+            }
+            lightboxState.currentIndex = newIndex;
+            renderLightboxImage(newIndex);
+        }
+
+        /**
+         * 下一张（非循环）
+         */
+        function nextImage() {
+            const total = lightboxState.images.length;
+            if (total <= 1) return;
+            let newIndex = lightboxState.currentIndex + 1;
+            if (newIndex >= total) {
+                // 最后一张，无动作
+                return;
+            }
+            lightboxState.currentIndex = newIndex;
+            renderLightboxImage(newIndex);
+        }
+
+        /**
+         * 关闭灯箱
+         */
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.remove('active');
+
+            lightboxState.isOpen = false;
+
+            const img = document.getElementById('lightboxImg');
+            if (img) {
+                img._loadingToken = null;
+                img.onload = null;
+                img.onerror = null;
+            }
+
+            if (currentLightboxBlobURL) {
+                URL.revokeObjectURL(currentLightboxBlobURL);
+                currentLightboxBlobURL = null;
+            }
+
+            // ---------- 清理状态 ----------
+            lightboxState.images = [];
+            lightboxState.currentIndex = 0;
+
+            // ---------- 清空 caption ----------
+            const cap = document.getElementById('lightboxCaption');
+            if (cap) cap.textContent = '';
+        }
+
+        /**
+         * 设置灯箱事件（关闭按钮、背景点击、图片翻页）
+         */
         function setupLightbox() {
             const lb = document.getElementById('lightbox');
-            document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+            const img = document.getElementById('lightboxImg');
+            const closeBtn = document.getElementById('lightboxClose');
+
+            // 关闭按钮
+            closeBtn.addEventListener('click', closeLightbox);
+
+            // 点击灯箱背景（非图片区域）关闭
             lb.addEventListener('click', function(e) {
-                if (e.target === this) closeLightbox();
-            });
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
+                if (e.target === this) {
                     closeLightbox();
-                    document.getElementById('speciesModal').classList.remove('active');
-                    document.getElementById('genericModal').classList.remove('active');
                 }
+            });
+
+            // ----- 🔥 核心：点击图片左右热区翻页（20% / 60% / 20%） -----
+            img.addEventListener('click', function(e) {
+                e.stopPropagation();
+
+                const total = lightboxState.images.length;
+
+                // 只有一张图：点击图片关闭灯箱
+                if (total <= 1) {
+                    closeLightbox();
+                    return;
+                }
+
+                // 计算鼠标在图片上的相对位置
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+
+                if (x < width * 0.25) {
+                    prevImage();
+                    return;
+                }
+
+                if (x > width * 0.75) {
+                    nextImage();
+                    return;
+                }
+
             });
         }
 
@@ -1362,27 +1869,59 @@
             if (!img) return;
             e.stopPropagation();
 
-            if (img.dataset.imgUuid) {
-                try {
-                    const blob = await getImageFromDB(img.dataset.imgUuid);
-                    if (!blob) {
-                        toast('❌ 图片数据已丢失');
-                        return;
-                    }
-                    const url = URL.createObjectURL(blob);
-                    openLightbox(url, img.dataset.caption || '');
-                } catch (err) {
-                    toast('❌ 图片加载失败');
+            // 找到所在的 photo-strip 容器
+            const strip = img.closest('.photo-strip');
+            if (!strip) return;
+
+            // 收集该 strip 中所有图片的数据，同时记录当前点击的索引
+            const imageElements = strip.querySelectorAll('img');
+            const validImages = [];
+            let actualIndex = 0;
+
+            for (let i = 0; i < imageElements.length; i++) {
+                const el = imageElements[i];
+                const uuid = el.dataset.imgUuid || '';
+                const caption = el.dataset.caption || '';
+                const src = el.dataset.src || el.src || '';
+
+                let imageData = null;
+                if (uuid) {
+                    // 引用图片（存储在 IndexedDB 中）
+                    imageData = {
+                        uuid: uuid,
+                        caption: caption,
+                        isRef: true,
+                        src: ''
+                    };
+                } else if (src) {
+                    // 普通图片（URL 或 data:image）
+                    imageData = {
+                        src: src,
+                        caption: caption,
+                        isRef: false,
+                        uuid: ''
+                    };
                 }
+
+                if (imageData) {
+                    // 如果当前元素就是被点击的图片，记录它在 validImages 中的位置
+                    if (el === img) {
+                        actualIndex = validImages.length;
+                    }
+                    validImages.push(imageData);
+                }
+            }
+
+            if (validImages.length === 0) {
+                toast('❌ 没有可显示的图片');
                 return;
             }
 
-            const src = img.dataset.src || img.src;
-            if (src) {
-                openLightbox(src, img.dataset.caption || '');
-            } else {
-                toast('❌ 图片链接无效');
-            }
+            // 如果 actualIndex 超出范围（理论上不会），置为 0
+            if (actualIndex >= validImages.length) actualIndex = 0;
+
+            // 打开灯箱
+            openLightbox(validImages, actualIndex);
         }
 
         // ============================================================
@@ -1404,7 +1943,7 @@
         let idCounter = 1000;
         let sortableInstances = [];
         let treeSortableInstances = [];
-        let imageSortableInstances = [];
+        let highlightTimer = null;
 
         function generateId() { return 'n' + (++idCounter); }
 
@@ -1430,6 +1969,23 @@
                 }
             }
             return null;
+        }
+
+        // ===== 获取从根节点到目标节点的完整路径（不包含根节点） =====
+        function getNodePath(nodeId) {
+            const path = [];
+            let current = findNodeById(treeData, nodeId);
+            if (!current) return path;
+
+            while (current) {
+                const parent = findParent(treeData, current.id);
+                if (parent) {
+                    // 有父节点才说明不是根节点，放入路径
+                    path.unshift(current);
+                }
+                current = parent;
+            }
+            return path; // 例如 [根节点下的子分类节点, ..., 目标节点]
         }
 
         // ===== 获取节点所属的分类路径（只含 taxon 类型，不含根节点） =====
@@ -1462,7 +2018,7 @@
 
         function getDisplayName(node) {
             if (node.type === 'species') return node.commonName || node.latinName || node.name || '未命名物种';
-            if (node.type === 'content') return '📝 笔记';
+            if (node.type === 'content') return '🗒︎';
             return node.name || '未命名';
         }
 
@@ -1517,6 +2073,7 @@
 
         function renderTree() {
             const container = document.getElementById('treeRoot');
+            cleanupBlobURLs(container);
             container.innerHTML = '';
             if (!treeData) return;
             renderNode(treeData, container);
@@ -1533,14 +2090,28 @@
             initTreeSortable();
         }
 
+        // ---------- 新增：添加占位元素 ----------
+        function addPlaceholder(ul) {
+            // 移除可能残留的旧占位
+            const existing = ul.querySelector('li[data-placeholder="true"]');
+            if (existing) existing.remove();
+
+            const placeholder = document.createElement('li');
+            placeholder.dataset.placeholder = 'true';
+            placeholder.className = 'empty-placeholder';
+            placeholder.textContent = '⬇ 拖入下方成为子项';
+            ul.appendChild(placeholder);
+        }
+
         function renderNode(node, container) {
             const li = document.createElement('li');
             li.dataset.nodeId = node.id;
             li._node = node;
+            const children = node.children || [];
 
             const label = document.createElement('div');
             label.className = 'node-label';
-            if (node.type === 'taxon' && node.children && node.children.length > 0) {
+            if (node.type === 'taxon' && children.length > 0) {
                 label.classList.add('node-has-children');
             } else {
                 label.classList.add('node-leaf');
@@ -1549,12 +2120,12 @@
 
             const arrow = document.createElement('span');
             arrow.className = 'arrow';
-            const hasTaxonChildren = (node.children || []).some(c => c.type === 'taxon');
-            if (hasTaxonChildren) { arrow.textContent = '▶'; } else if (node.children && node.children.length > 0) { arrow
-                    .textContent = '📄';
+            const hasTaxonChildren = children.some(c => c.type === 'taxon');
+            if (hasTaxonChildren) { arrow.textContent = '▶︎'; } else if (children.length > 0) { arrow
+                    .textContent = '🗅︎';
                 arrow.style.color = '#888'; } else { arrow.textContent = '•';
                 arrow.style.color = '#bbb';
-                arrow.style.fontSize = '14px'; }
+                arrow.style.fontSize = '0.7rem'; }
             label.appendChild(arrow);
 
             const nameSpan = document.createElement('span');
@@ -1570,15 +2141,15 @@
 
             if (node.type === 'species' && node.photos && node.photos.length) {
                 const icon = document.createElement('span');
-                icon.textContent = ' 📷';
-                icon.style.fontSize = '0.65rem';
+                icon.textContent = ' 📷︎';
+                icon.style.fontSize = '0.7rem';
                 icon.style.color = '#888';
                 nameSpan.appendChild(icon);
             }
             if (node.type === 'taxon' && node.photos && node.photos.length) {
                 const icon = document.createElement('span');
-                icon.textContent = ' 🖼';
-                icon.style.fontSize = '0.65rem';
+                icon.textContent = ' 🖼︎';
+                icon.style.fontSize = '0.7rem';
                 icon.style.color = '#888';
                 nameSpan.appendChild(icon);
             }
@@ -1590,19 +2161,22 @@
             if (node.type !== 'root') {
                 if (node.type === 'taxon') {
                     const b1 = document.createElement('button');
-                    b1.textContent = '➕';
+                    b1.textContent = '＋';
+                    b1.style.fontWeight = 'bold'
                     b1.title = '添加子分类';
                     b1.onclick = e => { e.stopPropagation();
                         showAddTaxonModal(node); };
                     actions.appendChild(b1);
                     const b2 = document.createElement('button');
-                    b2.textContent = '🐾';
+                    b2.textContent = '⚘︎';
+                    b2.style.fontWeight = 'bold'
                     b2.title = '添加物种';
                     b2.onclick = e => { e.stopPropagation();
                         showAddSpeciesModal(node); };
                     actions.appendChild(b2);
                     const b3 = document.createElement('button');
-                    b3.textContent = '📝';
+                    b3.textContent = '🗒︎';
+                    b3.style.fontWeight = 'bold'
                     b3.title = '添加笔记';
                     b3.onclick = e => { e.stopPropagation();
                         showAddContentModal(node); };
@@ -1610,12 +2184,14 @@
                 }
                 const bEdit = document.createElement('button');
                 bEdit.textContent = '✎';
+                bEdit.style.fontWeight = 'bold'
                 bEdit.title = '编辑';
                 bEdit.onclick = e => { e.stopPropagation();
                     openEditor(node); };
                 actions.appendChild(bEdit);
                 const bDel = document.createElement('button');
                 bDel.textContent = '✕';
+                bDel.style.fontWeight = 'bold'
                 bDel.className = 'del-btn';
                 bDel.title = '删除';
                 bDel.onclick = e => { e.stopPropagation();
@@ -1624,37 +2200,54 @@
             }
             label.appendChild(actions);
 
-            label.addEventListener('click', function(e) {
-                if (e.target.closest('button')) return;
-                if (node.type === 'content') { showContentDetail(node); return; }
-                if (node.type === 'species') { showSpeciesDetail(node); return; }
-                const cd = li.querySelector(':scope > .children-container');
-                if (cd) {
-                    const open = cd.classList.contains('open');
-                    if (open) { cd.classList.remove('open');
-                        label.classList.remove('expanded'); } else { cd.classList.add('open');
-                        label.classList.add('expanded'); }
-                }
-                selectNode(node);
-                showTaxonContent(node);
-            });
+                // -------- 点击事件：展开/折叠 + 选择 --------
+                label.addEventListener('click', function(e) {
+                    if (e.target.closest('button')) return;
+                    if (node.type === 'content') { showContentDetail(node); return; }
+                    if (node.type === 'species') { showSpeciesDetail(node); return; }
+                    const cd = li.querySelector(':scope > .children-container');
+                    if (cd) {
+                        const open = cd.classList.contains('open');
+                        if (open) {
+                            cd.classList.remove('open');
+                            label.classList.remove('expanded');
+                        } else {
+                            cd.classList.add('open');
+                            label.classList.add('expanded');
+                        }
+                    }
+                    selectNode(node);
+                    showTaxonContent(node);
+                });
 
-            li.appendChild(label);
+                li.appendChild(label);
 
-            if (node.children && node.children.length) {
+            // ========== ⭐ 核心改动：始终为 taxon 创建 children-container ==========
+            if (node.type === 'taxon') {
                 const childDiv = document.createElement('div');
                 childDiv.className = 'children-container';
-                if (node.id === 'root') { childDiv.classList.add('open');
-                    label.classList.add('expanded'); }
-                const childUl = document.createElement('ul');
-                const taxonChildren = (node.children || []).filter(c => c.type === 'taxon');
-                const otherChildren = (node.children || []).filter(c => c.type !== 'taxon');
-                for (let child of [...taxonChildren, ...otherChildren]) {
-                    renderNode(child, childUl);
+                // 根节点或有子项时默认展开
+                if (node.id === 'root' || children.length > 0) {
+                    childDiv.classList.add('open');
+                    label.classList.add('expanded');
                 }
+                const childUl = document.createElement('ul');
+                childUl.dataset.parentId = node.id;
+
+                if (children.length > 0) {
+                    const taxonChildren = children.filter(c => c.type === 'taxon');
+                    const otherChildren = children.filter(c => c.type !== 'taxon');
+                    for (let child of [...taxonChildren, ...otherChildren]) {
+                        renderNode(child, childUl);
+                    }
+                } else {
+                    addPlaceholder(childUl);
+                }
+
                 childDiv.appendChild(childUl);
                 li.appendChild(childDiv);
             }
+            // ================================================================
 
             container.appendChild(li);
         }
@@ -1663,96 +2256,126 @@
         // 🔄 树拖拽（跨分类移动）
         // ============================================================
 
-        function initTreeSortable() {
-            treeSortableInstances.forEach(s => s.destroy());
-            treeSortableInstances = [];
+function initTreeSortable() {
+    treeSortableInstances.forEach(s => s.destroy());
+    treeSortableInstances = [];
 
-            const treeWrap = document.getElementById('treeWrap');
-            const uls = treeWrap.querySelectorAll('ul');
-            uls.forEach(ul => {
-                const sortable = new Sortable(ul, {
-                    group: 'tree',
-                    animation: 150,
-                    handle: '.node-label',
-                    filter: 'li[data-node-id="root"]',
-                    draggable: 'li',
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    dragClass: 'sortable-drag',
-                    disabled: !isEditMode,
-                    onEnd: function(evt) {
-                        const item = evt.item;
-                        const nodeId = item.dataset.nodeId;
-                        if (!nodeId || nodeId === 'root') return;
-                        const node = findNodeById(treeData, nodeId);
-                        if (!node) return;
+    const treeWrap = document.getElementById('treeWrap');
+    const uls = treeWrap.querySelectorAll('ul');
+    uls.forEach(ul => {
+        const sortable = new Sortable(ul, {
+            group: 'tree',
+            animation: 150,
+            handle: '.node-label',
+            filter: 'li[data-placeholder="true"]',
+            draggable: 'li:not([data-placeholder="true"])',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            disabled: !isEditMode,
 
-                        const targetUl = evt.to;
-                        let parentLi = targetUl.closest('li');
-                        let targetParentId = parentLi ? parentLi.dataset.nodeId : 'root';
-                        let targetParent = targetParentId === 'root' ? treeData : findNodeById(treeData,
-                            targetParentId);
-                        if (!targetParent) return;
+            onEnd: function(evt) {
+                const item = evt.item;
+                const nodeId = item.dataset.nodeId;
+                if (!nodeId || nodeId === 'root') return;
+                const node = findNodeById(treeData, nodeId);
+                if (!node) return;
 
-                        const newIndex = evt.newIndex;
+                const targetUl = evt.to;
+                let parentLi = targetUl.closest('li');
+                let targetParentId = parentLi ? parentLi.dataset.nodeId : 'root';
+                let targetParent = targetParentId === 'root' ? treeData : findNodeById(treeData, targetParentId);
+                if (!targetParent) return;
 
-                        if (targetParent.id === nodeId) {
-                            toast('❌ 不能将节点移动到自身');
-                            saveAndRefresh();
-                            return;
-                        }
-                        let isDescendant = false;
+                const realChildren = Array.from(targetUl.children)
+                    .filter(li => !li.dataset.placeholder);
+                const newIndex = realChildren.indexOf(item);
 
-                        function checkDescendant(parent, childId) {
-                            if (!parent.children) return false;
-                            for (let c of parent.children) {
-                                if (c.id === childId) return true;
-                                if (checkDescendant(c, childId)) return true;
-                            }
-                            return false;
-                        }
-                        if (checkDescendant(node, targetParent.id)) {
-                            toast('❌ 不能将节点移动到自己的子节点下');
-                            saveAndRefresh();
-                            return;
-                        }
+                if (newIndex === -1) {
+                    saveAndRefresh();
+                    return;
+                }
 
-                        const oldParent = findParent(treeData, nodeId);
-                        if (!oldParent) return;
-                        if (oldParent.id === targetParent.id) {
-                            const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
-                            if (oldIndex !== -1 && oldIndex !== newIndex) {
-                                const [removed] = oldParent.children.splice(oldIndex, 1);
-                                oldParent.children.splice(newIndex, 0, removed);
-                                saveData();
-                                renderTree();
-                                if (selectedNode) {
-                                    const refreshed = findNodeById(treeData, selectedNode.id);
-                                    if (refreshed) { selectedNode = refreshed;
-                                        showTaxonContent(refreshed); } else { selectedNode = treeData;
-                                        showTaxonContent(treeData); }
-                                }
-                                toast('✅ 排序已更新');
-                            }
-                            return;
-                        }
+                if (targetParent.id === nodeId) {
+                    toast('❌ 不能将节点移动到自身');
+                    saveAndRefresh();
+                    return;
+                }
 
-                        const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
-                        if (oldIndex === -1) return;
-                        const [movedNode] = oldParent.children.splice(oldIndex, 1);
-                        targetParent.children.splice(newIndex, 0, movedNode);
+                function checkDescendant(parent, childId) {
+                    if (!parent.children) return false;
+                    for (let c of parent.children) {
+                        if (c.id === childId) return true;
+                        if (checkDescendant(c, childId)) return true;
+                    }
+                    return false;
+                }
+                if (checkDescendant(node, targetParent.id)) {
+                    toast('❌ 不能将节点移动到自己的子节点下');
+                    saveAndRefresh();
+                    return;
+                }
 
+                const oldParent = findParent(treeData, nodeId);
+                if (!oldParent) return;
+
+                if (oldParent.id === targetParent.id) {
+                    const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
+                    if (oldIndex !== -1 && oldIndex !== newIndex) {
+                        const [removed] = oldParent.children.splice(oldIndex, 1);
+                        oldParent.children.splice(newIndex, 0, removed);
                         saveData();
                         renderTree();
-                        expandPath(targetParent.id);
-                        selectNode(targetParent);
-                        showTaxonContent(targetParent);
-                        toast(`✅ 已将「${getDisplayName(movedNode)}」移动到「${getDisplayName(targetParent)}」`);
+                        if (selectedNode) {
+                            const refreshed = findNodeById(treeData, selectedNode.id);
+                            if (refreshed) { selectedNode = refreshed; showTaxonContent(refreshed); } else { selectedNode = treeData;
+                                showTaxonContent(treeData); }
+                        }
+                        toast('✅ 排序已更新');
                     }
-                });
-                treeSortableInstances.push(sortable);
-            });
-        }
+                    return;
+                }
+
+                const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
+                if (oldIndex === -1) return;
+                const [movedNode] = oldParent.children.splice(oldIndex, 1);
+                if (!targetParent.children) targetParent.children = [];
+                targetParent.children.splice(newIndex, 0, movedNode);
+
+                saveData();
+                renderTree();
+                expandPath(targetParent.id);
+                selectNode(targetParent);
+                showTaxonContent(targetParent);
+                toast(`✅ 已将「${getDisplayName(movedNode)}」移动到「${getDisplayName(targetParent)}」`);
+            }, 
+
+            onDragEnter: function(evt) {
+                const targetUl = evt.to;
+                if (!targetUl) return;
+                const placeholder = targetUl.querySelector('li[data-placeholder="true"]');
+                if (placeholder) {
+                    placeholder.style.borderColor = '#2c7a4a';
+                    placeholder.style.background = '#e8f5e9';
+                    placeholder.style.color = '#2c7a4a';
+                    placeholder.style.transition = 'all 0.15s ease';
+                }
+            },
+
+            onDragLeave: function(evt) {
+                const targetUl = evt.to;
+                if (!targetUl) return;
+                const placeholder = targetUl.querySelector('li[data-placeholder="true"]');
+                if (placeholder) {
+                    placeholder.style.borderColor = '#d0d7de';
+                    placeholder.style.background = '#fafbfc';
+                    placeholder.style.color = '#aaa';
+                }
+            }
+        });
+        treeSortableInstances.push(sortable);
+    });
+}
 
         // ============================================================
         // 📋 主区域内容展示（含拖拽排序）
@@ -1778,36 +2401,68 @@
                 <h2>${node.name || '未命名'} <span class="count">${count} 个子项</span></h2>
                 <div class="controls">
                     <div class="size-control">
-                        <button data-size="small" title="小卡片">小</button>
-                        <button data-size="medium" class="active" title="中等卡片">中</button>
-                        <button data-size="large" title="大卡片">大</button>
+                        <span style="font-size:0.75rem;color:#888;user-select:none;margin-right:2px;">小</span>
+                        <input type="range" min="0" max="100" value="50" step="1" 
+                            style="width:100px;vertical-align:middle;cursor:pointer;" />
+                        <span style="font-size:0.75rem;color:#888;user-select:none;margin-left:2px;">大</span>
                     </div>
+                    <button id="fontToggleBtn" class="btn-primary" onclick="toggleFont()" style="font-size:0.78rem;padding:4px 11px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;transition:all 0.12s;color:#333;display:inline-flex;align-items:center;gap:3px;border-color:var(--primary);color:var(--primary);font-weight:500;">
+                        ☐ 衬线阅读模式
+                    </button>
                     <div class="add-btns">
-                        <button class="add-taxon" onclick="showAddTaxonModal(findNodeById(treeData, '${node.id}'))">➕ 子分类</button>
-                        <button class="add-species" onclick="showAddSpeciesModal(findNodeById(treeData, '${node.id}'))">🐾 物种</button>
-                        <button class="add-content" onclick="showAddContentModal(findNodeById(treeData, '${node.id}'))">📝 笔记</button>
+                        <button class="add-taxon" onclick="showAddTaxonModal(findNodeById(treeData, '${node.id}'))">＋ 子分类</button>
+                        <button class="add-species" onclick="showAddSpeciesModal(findNodeById(treeData, '${node.id}'))">⚘︎ 物种</button>
+                        <button class="add-content" onclick="showAddContentModal(findNodeById(treeData, '${node.id}'))">🗒︎ 笔记</button>
                     </div>
                 </div>
             `;
 
-            header.querySelectorAll('.size-control button').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const size = this.dataset.size;
-                    setCardSize(size);
-                    header.querySelectorAll('.size-control button').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
+            const slider = document.querySelector('.size-control input[type="range"]');
+            if (slider) {
+                // 读取存储的像素值 → 反推滑块位置
+                let savedPx = localStorage.getItem('cardSize');
+                let percent = 50; // 默认 50% → 190px
+                if (savedPx) {
+                    const px = parseInt(savedPx, 10);
+                    if (!isNaN(px) && px >= 120 && px <= 400) {
+                        // 线性反推：percent = (px - 120) / (400 - 120) * 100
+                        percent = Math.round((px - 120) / (400 - 120) * 100);
+                    } else {
+                        // 兼容旧版 small/medium/large
+                        if (savedPx === 'small') percent = 15;
+                        else if (savedPx === 'medium') percent = 50;
+                        else if (savedPx === 'large') percent = 80;
+                    }
+                } else {
+                    // 兼容旧版 cardSizePercent（如果存在）
+                    const oldPercent = localStorage.getItem('cardSizePercent');
+                    if (oldPercent) {
+                        const p = parseInt(oldPercent, 10);
+                        if (!isNaN(p) && p >= 0 && p <= 100) percent = p;
+                    }
+                }
+
+                // 保证在有效范围内
+                percent = Math.min(100, Math.max(0, percent));
+                slider.value = percent;
+                applyCardSize(percent);
+
+                slider.addEventListener('input', function() {
+                    const val = parseInt(this.value, 10);
+                    applyCardSize(val);
                 });
-            });
+            }
 
             const wrap = document.getElementById('mainContentWrap');
+            cleanupBlobURLs(wrap);
             if (displayChildren.length === 0) {
                 wrap.innerHTML = `
                     <div class="card-grid" id="sortableGrid_${node.id}">
                         <div class="card placeholder-card">
                             <div class="card-body" style="text-align:center;padding:16px;">
-                                <div style="font-size:2rem;margin-bottom:6px;">📭</div>
-                                <div>此分类群下暂无内容</div>
-                                <div style="font-size:0.75rem;color:#bbb;margin-top:4px;">点击上方按钮添加</div>
+                                <div style="font-size:calc(2rem * var(--card-font-scale));rem;margin-bottom:6px;">∅</div>
+                                <div style="font-size:calc(1rem * var(--card-font-scale));rem;">此分类群下暂无内容</div>
+                                <div style="font-size:calc(0.8rem * var(--card-font-scale));;color:#bbb;margin-top:4px;">请在编辑模式下添加内容</div>
                             </div>
                         </div>
                     </div>
@@ -1830,12 +2485,7 @@
             selectedNode = node;
 
             updateEditButtons();
-
-            const savedSize = localStorage.getItem('cardSize') || 'medium';
-            setCardSize(savedSize);
-            header.querySelectorAll('.size-control button').forEach(b => {
-                b.classList.toggle('active', b.dataset.size === savedSize);
-            });
+            updateFontToggleUI();
         }
 
         // ============================================================
@@ -1878,7 +2528,7 @@
                 clickHandler = `showContentDetail(findNodeById(treeData, '${item.id}'))`;
             } else if (type === 'taxon') {
                 const count = (item.children || []).filter(c => c.type !== 'content').length;
-                subInfo = `<div class="sub">${count} 个子项 ${hasPhoto ? '· 🖼' : ''}</div>`;
+                subInfo = `<div class="sub">${count} 个子项 ${hasPhoto ? '· 🖼︎' : ''}</div>`;
                 clickHandler = `showTaxonContent(findNodeById(treeData, '${item.id}'))`;
             } else if (type === 'species') {
                 const latin = item.latinName || '';          // 只取拉丁学名
@@ -1886,7 +2536,7 @@
                 const fallbackName = item.commonName || item.name || '';  // 备选显示名
                 let latinDisplay = latin ? `<i>${latin}</i>` : fallbackName;  // 有拉丁名就斜体，否则显示普通名
                 let authorDisplay = author ? ' ' + author : '';
-                subInfo = `<div class="sub">${latinDisplay}${authorDisplay}${hasPhoto ? ' <span class="photo-count">· 📷 ' + item.photos.length + '张</span>' : ''}</div>`;
+                subInfo = `<div class="sub">${latinDisplay}${authorDisplay}${hasPhoto ? ' <span class="photo-count">· 📷︎ ' + item.photos.length + '张</span>' : ''}</div>`;
                 clickHandler = `showSpeciesDetail(findNodeById(treeData, '${item.id}'))`;
             }
 
@@ -1912,22 +2562,24 @@
         }
 
         // ===== 卡片尺寸控制 =====
-        function setCardSize(size) {
+        function applyCardSize(percent) {
             const root = document.documentElement;
-            let minVal;
-            switch (size) {
-                case 'small':
-                    minVal = '140px';
-                    break;
-                case 'large':
-                    minVal = '280px';
-                    break;
-                default:
-                    minVal = '190px';
-                    break;
-            }
-            root.style.setProperty('--card-min', minVal);
-            localStorage.setItem('cardSize', size);
+            percent = Math.min(100, Math.max(0, percent));
+
+            const width = Math.round(120 + (percent / 100) * (400 - 120));
+            const imgHeight = Math.round(70 + (percent / 100) * (235 - 70));
+            const padding = Math.round(8 + (percent / 100) * (20 - 8));
+
+            // 字体缩放因子
+            const fontScale = 0.9 + (percent / 100) * 0.2;
+
+            root.style.setProperty('--card-min', width + 'px');
+            root.style.setProperty('--card-img-height', imgHeight + 'px');
+            root.style.setProperty('--card-padding', padding + 'px');
+            root.style.setProperty('--card-font-scale', fontScale.toFixed(2));  // 保留两位小数
+
+            localStorage.setItem('cardSize', String(width));
+            localStorage.removeItem('cardSizePercent');
         }
 
         // ============================================================
@@ -1943,14 +2595,17 @@
 
             const sortable = new Sortable(grid, {
                 animation: 200,
+                draggable: '.card:not(.placeholder-card)',
                 handle: '.card',
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
                 dragClass: 'sortable-drag',
                 delay: 100,
                 delayOnTouchOnly: true,
+                disabled: !isEditMode,
+
                 onEnd: function(evt) {
-                    const items = grid.querySelectorAll('.card');
+                    const items = grid.querySelectorAll('.card:not(.placeholder-card)');
                     const newOrder = [];
                     for (let el of items) {
                         const id = el.dataset.nodeId;
@@ -1991,33 +2646,145 @@
             const input = document.getElementById('searchInput');
             const suggestions = document.getElementById('searchSuggestions');
 
-            input.addEventListener('input', function() {
-                const query = this.value.trim().toLowerCase();
-                if (!query) { suggestions.classList.remove('active'); return; }
-                const matches = allNodes.filter(item => {
-                    const name = getDisplayName(item.node).toLowerCase();
-                    return name.indexOf(query) !== -1;
-                });
-                if (matches.length === 0) {
-                    suggestions.innerHTML = '<div class="suggestion-item" style="color:#888;">无匹配结果</div>';
-                } else {
-                    let html = '';
-                    const maxShow = Math.min(matches.length, 25);
-                    for (let i = 0; i < maxShow; i++) {
-                        const item = matches[i];
-                        const typeLabel = getTypeLabel(item.node);
-                        const badgeClass = item.node.type === 'species' ? 'species' : 'taxon';
-                        html += `
-                            <div class="suggestion-item" data-node-id="${item.node.id}">
-                                <span>${getDisplayName(item.node)}</span>
-                                <span class="badge ${badgeClass}">${typeLabel}</span>
-                            </div>
-                        `;
-                    }
-                    suggestions.innerHTML = html;
+        function getSearchScore(match, query, node) {
+            const text = (match.text || '').toLowerCase();
+            let score = 0;
+
+            // 1. 完整匹配（最高优先级）
+            if (text === query) {
+                score += 1000;
+            }
+
+            // 2. 分类阶元优先（适用于模糊搜索）
+            if (node.type === 'taxon') {
+                score += 100;
+            }
+
+            // 3. 匹配类型权重
+            switch (match.type) {
+                case 'name':
+                    score += 80;      // 分类群名称
+                    break;
+                case 'latinName':
+                    score += 70;      // 物种当前拉丁学名
+                    break;
+                case 'commonName':
+                    score += 50;      // 中文俗名
+                    break;
+                case 'synonym':
+                    score += 20;      // 异名
+                    break;
+                default:
+                    score += 10;
+            }
+
+            // 4. 开头匹配优于中间包含
+            if (text.startsWith(query)) {
+                score += 30;
+            }
+
+            return score;
+        }
+
+        input.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            if (!query) { suggestions.classList.remove('active'); return; }
+
+            // ----- 匹配阶段：记录所有匹配项 -----
+            const matches = [];
+            for (const item of allNodes) {
+                const node = item.node;
+                const found = [];
+
+                // 1. 中文俗名
+                if (node.commonName && node.commonName.toLowerCase().includes(query)) {
+                    found.push({ type: 'commonName', text: node.commonName });
                 }
-                suggestions.classList.add('active');
+
+                // 2. 拉丁学名
+                if (node.latinName && node.latinName.toLowerCase().includes(query)) {
+                    found.push({ type: 'latinName', text: node.latinName });
+                }
+
+                // 3. 异名（每个异名单独作为一条匹配）
+                if (node.synonyms && node.synonyms.length) {
+                    for (const syn of node.synonyms) {
+                        if (syn.toLowerCase().includes(query)) {
+                            found.push({ type: 'synonym', text: syn });
+                        }
+                    }
+                }
+
+                // 4. 通用名称（name）
+                if (node.name && node.name.toLowerCase().includes(query)) {
+                    found.push({ type: 'name', text: node.name });
+                }
+
+                // 如果有匹配，计算该节点的最高分
+                if (found.length > 0) {
+                    let bestScore = -Infinity;
+                    for (const m of found) {
+                        const score = getSearchScore(m, query, node);
+                        if (score > bestScore) bestScore = score;
+                    }
+                    matches.push({
+                        node: node,
+                        matches: found,
+                        score: bestScore
+                    });
+                }
+            }
+
+            // ----- 排序：按分数降序，同分按名称字母升序 -----
+            matches.sort((a, b) => {
+                if (a.score !== b.score) return b.score - a.score;
+                return getDisplayName(a.node).localeCompare(getDisplayName(b.node));
             });
+
+            // ----- 渲染建议列表（与之前相同，仅适配 matches 结构） -----
+            if (matches.length === 0) {
+                suggestions.innerHTML = '<div class="suggestion-item" style="color:#888;">无匹配结果</div>';
+            } else {
+                let html = '';
+                const maxShow = Math.min(matches.length, 25);
+                for (let i = 0; i < maxShow; i++) {
+                    const { node, matches: matchList } = matches[i];
+                    const typeLabel = getTypeLabel(node);
+                    const badgeClass = node.type === 'species' ? 'species' : 'taxon';
+                    const displayName = getDisplayName(node);
+
+                    let nameHtml = displayName;
+                    if (node.type === 'species' && node.latinName) {
+                        nameHtml += ` <span class="search-latin">${node.latinName}</span>`;
+                    }
+
+                    let extraHtml = '';
+                    for (const m of matchList) {
+                        if (m.type === 'synonym') {
+                            extraHtml += `
+                                <div class="search-match-hint">
+                                    <span class="synonym-icon">[异名]</span> ${m.text}
+                                </div>
+                            `;
+                        }
+                        // 可扩展其他类型提示
+                    }
+
+                    html += `
+                        <div class="suggestion-item" data-node-id="${node.id}">
+                            <span>
+                                ${nameHtml}
+                                ${extraHtml}
+                            </span>
+                            <span class="badge ${badgeClass}">${typeLabel}</span>
+                        </div>
+                    `;
+                }
+                suggestions.innerHTML = html;
+            }
+
+            suggestions.classList.add('active');
+        });
 
             suggestions.addEventListener('click', function(e) {
                 const item = e.target.closest('.suggestion-item');
@@ -2027,11 +2794,8 @@
                 if (!node) return;
                 suggestions.classList.remove('active');
                 input.value = '';
-                if (node.type === 'species') { showSpeciesDetail(node); return; }
-                if (node.type === 'content') { showContentDetail(node); return; }
-                expandPath(node.id);
-                selectNode(node);
-                showTaxonContent(node);
+                // 统一使用 jumpToNode
+                jumpToNode(node);
             });
 
             document.addEventListener('click', function(e) {
@@ -2063,9 +2827,6 @@
             const targetLi = document.querySelector(`li[data-node-id="${nodeId}"]`);
             if (targetLi) {
                 targetLi.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                const lb = targetLi.querySelector('.node-label');
-                if (lb) { lb.classList.add('highlight');
-                    setTimeout(() => lb.classList.remove('highlight'), 2000); }
             }
         }
 
@@ -2082,10 +2843,65 @@
             return node;
         }
 
+        function jumpToNode(node) {
+            if (!node) return;
+
+            expandPath(node.id);
+            selectNode(node);
+            
+            if (node.type === 'species') {
+                showSpeciesDetail(node);
+            } else if (node.type === 'content') {
+                showContentDetail(node);
+            } else {
+                showTaxonContent(node);
+            }
+
+            highlightNode(node.id);
+        }
+
         function highlightNode(id) {
-            document.querySelectorAll('.node-label.highlight').forEach(el => el.classList.remove('highlight'));
+            if (highlightTimer) {
+                clearTimeout(highlightTimer);
+            }
+
+            document.querySelectorAll('.node-label.highlight')
+                .forEach(el => el.classList.remove('highlight'));
+
             const li = document.querySelector(`li[data-node-id="${id}"]`);
-            if (li) { const lb = li.querySelector('.node-label'); if (lb) lb.classList.add('highlight'); }
+            const lb = li?.querySelector('.node-label');
+
+            if (lb) {
+                lb.classList.add('highlight');
+
+                highlightTimer = setTimeout(() => {
+                    lb.classList.remove('highlight');
+                    highlightTimer = null;
+                }, 2000);
+            }
+        }
+
+        function toggleFont() {
+            const body = document.body;
+            body.classList.toggle('serif-mode');
+            updateFontToggleUI();   // 更新按钮文字
+            localStorage.setItem('fontMode', body.classList.contains('serif-mode') ? 'serif' : 'sans');
+        }
+
+        function applyFontPreference() {
+            const saved = localStorage.getItem('fontMode');
+            if (saved === 'serif') {
+                document.body.classList.add('serif-mode');
+            } else {
+                document.body.classList.remove('serif-mode');
+            }
+        }
+
+        function updateFontToggleUI() {
+            const btn = document.getElementById('fontToggleBtn');
+            if (!btn) return;
+            const isSerif = document.body.classList.contains('serif-mode');
+            btn.textContent = isSerif ? '☑ 衬线阅读模式' : '☐ 衬线阅读模式';
         }
 
         // ============================================================
@@ -2097,20 +2913,22 @@
             const btn = document.getElementById('editToggleBtn');
             if (isEditMode) {
                 btn.classList.add('active');
-                btn.textContent = '✅ 编辑模式';
+                btn.textContent = '☑ 编辑模式';
                 document.body.classList.add('edit-mode');
                 localStorage.setItem('editMode', 'true');
             } else {
                 btn.classList.remove('active');
-                btn.textContent = '✏️ 编辑模式';
+                btn.textContent = '✎ 编辑模式';
                 document.body.classList.remove('edit-mode');
                 localStorage.setItem('editMode', 'false');
             }
-            updateEditButtons();
             treeSortableInstances.forEach(s => s.option('disabled', !isEditMode));
-            if (selectedNode) showTaxonContent(selectedNode);
+            updateEditButtons();
+            if (selectedNode) {
+                showTaxonContent(selectedNode);
+            }
         }
-
+        
         function updateEditButtons() {
             document.querySelectorAll('.node-actions').forEach(el => {
                 el.style.display = isEditMode ? 'flex' : 'none';
@@ -2128,68 +2946,90 @@
 
         function initImageSortable(modalElement) {
             const textareas = modalElement.querySelectorAll('textarea[data-image-field="true"]');
+            
             textareas.forEach(textarea => {
                 const fieldId = textarea.id;
+                
+                // 创建预览容器（每个 textarea 对应一个容器）
                 const container = document.createElement('div');
                 container.className = 'image-sortable-list';
                 container.id = 'preview_' + fieldId;
                 textarea.parentNode.insertBefore(container, textarea.nextSibling);
 
-                function parseImages(text) {
-                    return text.split('\n').filter(s => s.trim()).map(line => {
-                        const parts = line.split('|');
-                        return { src: parts[0].trim(), caption: parts[1] ? parts[1].trim() : '' };
-                    });
-                }
-
+                // ===== 核心渲染函数 =====
                 function renderPreview() {
-                    const oldPreviews = container.querySelectorAll('.img-preview');
-                    oldPreviews.forEach(img => {
+                    // ---------- 第1步：销毁旧的 Sortable 实例 ----------
+                    if (container._sortableInstance) {
+                        container._sortableInstance.destroy();
+                        container._sortableInstance = null;
+                    }
+
+                    // ---------- 第2步：清理容器内所有图片的 ObjectURL ----------
+                    const oldImages = container.querySelectorAll('.img-preview');
+                    oldImages.forEach(img => {
                         if (img._blobURL) {
                             URL.revokeObjectURL(img._blobURL);
                             img._blobURL = null;
                         }
                     });
 
-                    const images = parseImages(textarea.value);
+                    // ---------- 第3步：解析数据 ----------
+                    const images = parseImageField(textarea.value);
+                    
+                    // 清空容器
                     container.innerHTML = '';
+
+                    // 如果无图片，显示占位提示
                     if (images.length === 0) {
-                        container.innerHTML =
-                            '<div style="color:#bbb;text-align:center;padding:8px;font-size:0.8rem;">暂无图片，请在上方输入或粘贴</div>';
+                        container.innerHTML = `
+                            <div style="color:#bbb;text-align:center;padding:8px;font-size:0.8rem;">
+                                暂无图片，请在上方输入或粘贴
+                            </div>
+                        `;
                         return;
                     }
+
+                    // ---------- 第4步：渲染每个图片项 ----------
                     images.forEach((img, index) => {
                         const item = document.createElement('div');
                         item.className = 'image-item';
                         item.dataset.index = index;
+
                         const isRef = img.src.startsWith('[img:');
-                        const previewSrc = isRef ?
-                            'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' :
-                            img.src;
+                        const previewSrc = isRef 
+                            ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' 
+                            : img.src;
+
                         item.innerHTML = `
                             <span class="drag-handle">⠿</span>
                             <img class="img-preview" src="${previewSrc}" alt="预览" onerror="this.style.display='none'" />
                             <span class="img-info">
-                                <span>${img.src.length > 40 ? img.src.slice(0,40)+'…' : img.src}</span>
+                                <span>${img.src.length > 40 ? img.src.slice(0,40) + '…' : img.src}</span>
                                 <span class="caption">${img.caption || ''}</span>
                             </span>
                             <span class="img-remove" title="移除">✕</span>
                         `;
+
+                        // 如果是 IndexedDB 引用，异步加载真实图片
                         if (isRef) {
                             const uuid = img.src.replace('[img:', '').replace(']', '');
                             const preview = item.querySelector('.img-preview');
                             if (preview) {
-                                getImageFromDB(uuid).then(blob => {
-                                    if (blob) {
-                                        setImageBlob(preview, blob);
-                                    } else {
+                                getImageFromDB(uuid)
+                                    .then(blob => {
+                                        if (blob) {
+                                            setImageBlob(preview, blob);
+                                        } else {
+                                            setImageBlob(preview, null);
+                                        }
+                                    })
+                                    .catch(() => {
                                         setImageBlob(preview, null);
-                                    }
-                                }).catch(() => {
-                                    setImageBlob(preview, null);
-                                });
+                                    });
                             }
                         }
+
+                        // 删除按钮事件
                         item.querySelector('.img-remove').addEventListener('click', function(e) {
                             e.stopPropagation();
                             const idx = parseInt(item.dataset.index);
@@ -2197,38 +3037,45 @@
                             lines.splice(idx, 1);
                             textarea.value = lines.join('\n');
                             textarea.dispatchEvent(new Event('input'));
-                            renderPreview();
+                            // input 事件会自动触发 renderPreview
                         });
+
                         container.appendChild(item);
                     });
+
+                    // ---------- 第5步：创建新的 Sortable 实例 ----------
                     if (window.Sortable) {
-                        const sortable = new Sortable(container, {
+                        container._sortableInstance = new Sortable(container, {
                             animation: 150,
                             handle: '.drag-handle',
                             ghostClass: 'sortable-ghost',
                             chosenClass: 'sortable-chosen',
+                            dragClass: 'sortable-drag',
+
                             onEnd: function(evt) {
+                                // ===== 性能优化：只 split 一次 =====
+                                const lines = textarea.value.split('\n').filter(s => s.trim());
                                 const items = container.querySelectorAll('.image-item');
                                 const newOrder = [];
+
                                 items.forEach(el => {
                                     const idx = parseInt(el.dataset.index);
-                                    const lines = textarea.value.split('\n').filter(s => s
-                                        .trim());
                                     if (idx < lines.length) {
                                         newOrder.push(lines[idx]);
                                     }
                                 });
+
                                 textarea.value = newOrder.join('\n');
                                 textarea.dispatchEvent(new Event('input'));
-                                renderPreview();
+                                // input 事件会自动触发 renderPreview，实现 UI 刷新
                             }
                         });
-                        if (!window._imageSortables) window._imageSortables = [];
-                        window._imageSortables.push(sortable);
                     }
                 }
 
+                // 监听输入变化，实时预览
                 textarea.addEventListener('input', renderPreview);
+                // 首次渲染
                 renderPreview();
             });
         }
@@ -2307,10 +3154,14 @@
         }
 
         // ============================================================
-        // 🧩 parsePhotos（支持 [img:uuid] 标记）
+        // 🧩 parseImageField（支持 [img:uuid] 标记）
         // ============================================================
 
-        function parsePhotos(text) {
+        /**
+         * 将图片字段文本解析为对象数组
+         * 每行格式：URL|caption 或 [img:uuid]|caption
+         */
+        function parseImageField(text) {
             const lines = text.split('\n').filter(s => s.trim());
             return lines.map(line => {
                 const parts = line.split('|');
@@ -2382,8 +3233,8 @@
                 ],
                 onSave: function(data) {
                     const result = validateTaxonName(parent, data.name);
-                    if (!result.valid) { toast(result.message); return; }
-                    const photos = parsePhotos(data.photos);
+                    if (!result.valid) { toast(result.message); return false; }
+                    const photos = parseImageField(data.photos);
                     const newNode = {
                         id: generateId(),
                         name: data.name.trim(),
@@ -2398,6 +3249,7 @@
                     expandPath(parent.id);
                     selectNode(parent);
                     showTaxonContent(parent);
+                    return true;
                 }
             });
         }
@@ -2412,15 +3264,18 @@
                     { id: 'authors', label: '命名人', type: 'text', placeholder: '例如：Thunb.' },
                     { id: 'distribution', label: '分布', type: 'text', placeholder: '分布范围' },
                     { id: 'habitat', label: '生境', type: 'text', placeholder: '生境描述' },
+                    { id: 'synonyms', label: '异名（每行一条）', type: 'textarea', placeholder: '例如：Rosa ferox Lawrance', rows: 2 },
                     { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', placeholder: '鉴定特征', rows: 2 },
                     { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', placeholder: '详细描述', rows: 3 },
-                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: 'https://example.com/photo.jpg|花朵特写', rows: 2,
+                    { id: 'discussion', label: '讨论（支持Markdown）', type: 'textarea', placeholder: '可记录争议、备注等', rows: 3 },
+                    { id: 'references', label: '参考文献（每行一条）', type: 'textarea', placeholder: '例如：《中国植物志》第37卷 (1985)', rows: 2 }, 
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: 'https://example.com/photo.jpg|花序，示苞片', rows: 2,
                         withPaste: true, isImageField: true }
                 ],
                 onSave: function(data) {
                     const result = validateSpeciesName(parent, data.commonName, data.latinName);
-                    if (!result.valid) { toast(result.message); return; }
-                    const photos = parsePhotos(data.photos);
+                    if (!result.valid) { toast(result.message); return false; }
+                    const photos = parseImageField(data.photos);
                     const commonName = data.commonName.trim();
                     const latinName = data.latinName.trim();
                     const newNode = {
@@ -2432,11 +3287,12 @@
                         latinName: latinName,
                         distribution: data.distribution.trim(),
                         habitat: data.habitat.trim(),
+                        synonyms: data.synonyms.split('\n').filter(s => s.trim()),
                         diagnosis: data.diagnosis.trim(),
                         description: data.description.trim(),
+                        discussion: data.discussion.trim(),
                         photos: photos,
-                        synonyms: [],
-                        references: []
+                        references: data.references.split('\n').filter(s => s.trim()),
                     };
                     if (!parent.children) parent.children = [];
                     parent.children.push(newNode);
@@ -2445,6 +3301,7 @@
                     expandPath(parent.id);
                     selectNode(parent);
                     showTaxonContent(parent);
+                    return true;
                 }
             });
         }
@@ -2458,7 +3315,7 @@
                 ],
                 onSave: function(data) {
                     const html = data.html.trim();
-                    if (!html) { toast('请输入内容'); return; }
+                    if (!html) { toast('请输入内容'); return false; }
                     const newNode = { id: generateId(), type: 'content', html: html };
                     if (!parent.children) parent.children = [];
                     parent.children.push(newNode);
@@ -2467,6 +3324,7 @@
                     expandPath(parent.id);
                     selectNode(parent);
                     showTaxonContent(parent);
+                    return true;
                 }
             });
         }
@@ -2498,13 +3356,14 @@
                 ],
                 onSave: function(data) {
                     const result = validateTaxonName(parent, data.name, node.id);
-                    if (!result.valid) { toast(result.message); return; }
+                    if (!result.valid) { toast(result.message); return false; }
                     node.name = data.name.trim();
-                    node.photos = parsePhotos(data.photos);
+                    node.photos = parseImageField(data.photos);
                     saveAndRefresh();
                     toast('✅ 已更新分类群');
                     if (selectedNode && selectedNode.id === node.id) showTaxonContent(node);
                     else if (selectedNode) showTaxonContent(selectedNode);
+                    return true;
                 }
             });
         }
@@ -2524,11 +3383,12 @@
                     { id: 'authors', label: '命名人', type: 'text', value: node.authors || '' },
                     { id: 'distribution', label: '分布', type: 'text', value: node.distribution || '' },
                     { id: 'habitat', label: '生境', type: 'text', value: node.habitat || '' },
+                    { id: 'synonyms', label: '异名（每行一条）', type: 'textarea', value: (node.synonyms || []).join('\n'),
+                        rows: 2 },
                     { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', value: node.diagnosis || '', rows: 2 },
                     { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', value: node.description || '',
                         rows: 3 },
-                    { id: 'synonyms', label: '异名（每行一条）', type: 'textarea', value: (node.synonyms || []).join('\n'),
-                        rows: 2 },
+                    { id: 'discussion', label: '讨论（支持Markdown）', type: 'textarea', value: node.discussion || '', rows: 3 },
                     { id: 'references', label: '参考文献（每行一条）', type: 'textarea', value: (node.references || [])
                             .join('\n'), rows: 2 },
                     { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', value: photosStr, rows: 2,
@@ -2536,21 +3396,23 @@
                 ],
                 onSave: function(data) {
                     const result = validateSpeciesName(parent, data.commonName, data.latinName, node.id);
-                    if (!result.valid) { toast(result.message); return; }
+                    if (!result.valid) { toast(result.message); return false; }
                     node.commonName = data.commonName.trim();
                     node.latinName = data.latinName.trim();
                     node.authors = data.authors.trim();
                     node.distribution = data.distribution.trim();
                     node.habitat = data.habitat.trim();
+                    node.synonyms = data.synonyms.split('\n').filter(s => s.trim());
                     node.diagnosis = data.diagnosis.trim();
                     node.description = data.description.trim();
-                    node.synonyms = data.synonyms.split('\n').filter(s => s.trim());
+                    node.discussion = data.discussion.trim();
                     node.references = data.references.split('\n').filter(s => s.trim());
-                    node.photos = parsePhotos(data.photos);
+                    node.photos = parseImageField(data.photos);
                     node.name = node.latinName || node.commonName || '未命名物种';
                     saveAndRefresh();
                     toast('✅ 已更新物种');
                     if (selectedNode) showTaxonContent(selectedNode);
+                    return true;
                 }
             });
         }
@@ -2563,11 +3425,12 @@
                 ],
                 onSave: function(data) {
                     const html = data.html.trim();
-                    if (!html) { toast('请输入内容'); return; }
+                    if (!html) { toast('请输入内容'); return false; }
                     node.html = html;
                     saveAndRefresh();
                     toast('✅ 已更新笔记');
                     if (selectedNode) showTaxonContent(selectedNode);
+                    return true;
                 }
             });
         }
@@ -2618,6 +3481,10 @@
                     treeData); }
         }
 
+        function closeSpeciesModal() {
+            document.getElementById('speciesModal').classList.remove('active');
+        }
+
         // ============================================================
         // 📄 物种详情（使用事件委托）
         // ============================================================
@@ -2632,22 +3499,42 @@
             const displayLatin = latin ? `<i>${latin}</i>` : (node.name || '');  // 有拉丁名就斜体，否则普通显示
 
             let infoItems = [];
-            if (node.synonyms && node.synonyms.length) infoItems.push({ label: '异名', value: node.synonyms.join('；') });
             if (node.distribution) infoItems.push({ label: '分布', value: node.distribution });
             if (node.habitat) infoItems.push({ label: '生境', value: node.habitat });
 
+            let synonymHtml = '';
+            if (node.synonyms && node.synonyms.length) {
+                synonymHtml = `
+                    <div class="item synonym-grid-item">
+                        <div class="synonym-section">
+                            <div class="synonym-header">
+                                <span>异名</span>
+                                <span class="synonym-count">(${node.synonyms.length})</span>
+                                <span class="collapse-icon">›</span>
+                            </div>
+                            <!-- 注意：移除 open 类，默认折叠 -->
+                            <div class="synonym-content">
+                                <ul class="synonym-list">
+                                    ${node.synonyms.map(s => `<li class="synonym-item">${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             let infoGrid = '';
-            if (infoItems.length) {
-                infoGrid = '<div class="detail-grid">' +
-                    infoItems.map(item =>
-                        `<div class="item"><strong>${item.label}</strong><span>${item.value}</span></div>`
-                    ).join('') +
-                    '</div>';
+            if (infoItems.length || synonymHtml) {
+                let itemsHtml = infoItems.map(item =>
+                    `<div class="item"><strong>${item.label}</strong><span>${item.value}</span></div>`
+                ).join('');
+                if (synonymHtml) itemsHtml += synonymHtml;
+                infoGrid = `<div class="detail-grid">${itemsHtml}</div>`;
             }
 
             let photoHTML = '';
             if (node.photos && node.photos.length) {
-                photoHTML = '<h3>📷 相册</h3><div class="photo-strip">';
+                photoHTML = '<h3 class="section-title">相册</h3><div class="photo-strip">';
                 for (let p of node.photos) {
                     const src = p.src || '';
                     const caption = p.caption || '';
@@ -2666,24 +3553,43 @@
 
             let descHTML = '';
             if (node.diagnosis) descHTML +=
-                `<h3>🔍 鉴定要点</h3><div class="markdown-body">${marked.parse(node.diagnosis)}</div>`;
+                `<h3 class="section-title">鉴定要点</h3><div class="markdown-body">${marked.parse(node.diagnosis)}</div>`;
             if (node.description) descHTML +=
-                `<h3>📄 物种描述</h3><div class="markdown-body">${marked.parse(node.description)}</div>`;
+                `<h3 class="section-title">物种描述</h3><div class="markdown-body">${marked.parse(node.description)}</div>`;
             
+            let discussionHTML = '';
+            if (node.discussion) {
+                discussionHTML = `<h3 class="section-title">讨论</h3><div class="markdown-body">${marked.parse(node.discussion)}</div>`;
+            }
+
             let refHTML = '';
             if (node.references && node.references.length) {
-                refHTML = '<h3>📚 参考文献</h3><ol class="ref-list">' +
+                refHTML = '<h3 class="section-title">参考文献</h3><ol class="ref-list">' +
                     node.references.map(r => `<li>${r}</li>`).join('') +
                     '</ol>';
             }
 
-            // 获取面包屑路径
-            const taxonPath = getTaxonPath(node, treeData);
+            // 获取面包屑路径（节点数组）
+            const pathNodes = getNodePath(node.id);
             let breadcrumbHTML = '';
-            if (taxonPath.length > 0) {
-                breadcrumbHTML = `<div class="breadcrumb" style="font-size:0.85rem;color:#888;margin-top:4px;">${taxonPath.join(' › ')}</div>`;
+            if (pathNodes.length > 0) {
+                const crumbs = pathNodes.map((n, index) => {
+                    const isLast = index === pathNodes.length - 1;
+                    const displayName = getDisplayName(n);
+                    
+                    if (isLast) {
+                        // 最后一个：当前节点，不可点击
+                        return `<span class="breadcrumb-current">${displayName}</span>`;
+                    } else {
+                        // 前面的节点：可点击跳转
+                        return `<span class="breadcrumb-link" data-node-id="${n.id}">${displayName}</span>`;
+                    }
+                }).join(' › ');
+                
+                breadcrumbHTML = `<div class="breadcrumb">${crumbs}</div>`;
             }
 
+            cleanupBlobURLs(body);
             body.innerHTML = `
                 <div class="modal-header">
                     <h2>${node.commonName || node.name || '未命名物种'}</h2>
@@ -2694,6 +3600,7 @@
                     ${infoGrid}
                     ${photoHTML}
                     ${descHTML}
+                    ${discussionHTML}
                     ${refHTML}
                     ${!photoHTML && !descHTML && !refHTML ? '<p style="color:#999;">该物种暂无详细信息</p>' : ''}
                 </div>
@@ -2705,7 +3612,36 @@
 
             modal.classList.add('active');
 
+            // 面包屑点击跳转
+            const breadcrumbLinks = modal.querySelectorAll('.breadcrumb-link');
+            breadcrumbLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const targetId = this.dataset.nodeId;
+                    const targetNode = findNodeById(treeData, targetId);
+                    if (targetNode) {
+                        // 关闭物种详情（使用封装函数，便于未来扩展）
+                        closeSpeciesModal();
+                        // 跳转到目标节点
+                        jumpToNode(targetNode);
+                    }
+                });
+            });
+
             loadImageRefs(body);
+
+            // 绑定异名折叠事件
+            const synonymHeaders = modal.querySelectorAll('.synonym-header');
+            synonymHeaders.forEach(header => {
+                header.addEventListener('click', function(e) {
+                    const content = this.nextElementSibling; // .synonym-content
+                    const icon = this.querySelector('.collapse-icon');
+                    if (content) {
+                        content.classList.toggle('open');
+                        icon.classList.toggle('open');
+                    }
+                });
+            });
 
             modal.removeEventListener('click', modalPhotoClickHandler);
             modal.addEventListener('click', modalPhotoClickHandler);
@@ -2714,13 +3650,14 @@
         function showContentDetail(node) {
             if (!node) return;
             showModal({
-                title: '📝 笔记详情',
+                title: '🗒︎ 笔记详情',
                 fields: [],
                 content: `
                 <div style="padding:6px 0;line-height:1.8;">
                     ${marked.parse(node.html || '')}
                 </div>`,
-                hideFooter: true
+                hideFooter: true,
+                allowOverlayClose: true
             });
         }
 
@@ -2771,6 +3708,7 @@
 
             let contentHTML = options.content || '';
 
+            cleanupBlobURLs(body);
             body.innerHTML = `
                 <div class="modal-header">
                     <h2>${options.title || '编辑'}</h2>
@@ -2781,19 +3719,29 @@
                 </div>
                 ${options.hideFooter ? '' : `
                 <div class="modal-footer">
-                    <button class="btn-cancel" onclick="closeModal()">取消</button>
-                    <button class="btn-save" id="modalSaveBtn">💾 保存</button>
+                    <button class="btn-cancel" onclick="tryCloseModal(document.getElementById('genericModal'))">取消</button>
+                    <button class="btn-save" id="modalSaveBtn">💾︎ 保存</button>
                 </div>
                 `}
             `;
 
             overlay.classList.add('active');
+            overlay._dirty = false;
+
+            // 给所有输入框绑定 input 事件（检测用户是否修改过内容）
+            body.querySelectorAll('input, textarea, select').forEach(el => {
+                ['input', 'change'].forEach(type => {
+                    el.addEventListener(type, function onInput() {
+                        overlay._dirty = true;
+                    });
+                });
+            });
 
             if (!options.hideFooter) {
                 setTimeout(() => {
                     initImageSortable(document.getElementById('modalContainer'));
                 }, 50);
-            }
+            };
 
             if (!options.hideFooter) {
                 document.getElementById('modalSaveBtn').onclick = function() {
@@ -2804,22 +3752,69 @@
                             if (el) data[f.id] = el.value;
                         }
                     }
-                    if (options.onSave) options.onSave(data);
-                    closeModal();
+                    if (options.onSave) {
+                        const result = options.onSave(data);
+                        if (result !== false) {
+                            overlay._dirty = false;
+                            closeModal();
+                        }
+                        // result === false 时不关闭
+                    } else {
+                        overlay._dirty = false;
+                        closeModal();
+                    }
                 };
             }
 
-            document.getElementById('modalCloseBtn').onclick = function() { closeModal(); if (options.onClose) options
-                    .onClose(); };
-            overlay.onclick = function(e) { if (e.target === this) { closeModal(); if (options.onClose) options.onClose(); } };
+            document.getElementById('modalCloseBtn').onclick = function() {
+                tryCloseModal(overlay);
+                if (options.onClose) options.onClose();
+            };
+
+            overlay.onclick = null;
+            if (options.allowOverlayClose) {
+                overlay.onclick = function(e) {
+                    if (e.target === overlay) {
+                        tryCloseModal(overlay);
+                        if (options.onClose) options.onClose();
+                    }
+                };
+            }
         }
 
-        function closeModal() {
-            document.getElementById('genericModal').classList.remove('active');
-            if (window._imageSortables) {
-                window._imageSortables.forEach(s => s.destroy());
-                window._imageSortables = [];
+            function tryCloseModal(overlay) {
+                if (!overlay) {
+                    overlay = document.getElementById('genericModal');
+                    if (!overlay || !overlay.classList.contains('active')) return;
+                }
+                if (!overlay._dirty) {
+                    closeModal();
+                    return;
+                }
+                if (confirm('当前修改尚未保存，确定放弃吗？')) {
+                    closeModal();
+                }
             }
+
+        function closeModal() {
+            const overlay = document.getElementById('genericModal');
+            if (!overlay) return;
+
+            // ---------- 清理所有图片排序容器 ----------
+            const containers = overlay.querySelectorAll('.image-sortable-list');
+            containers.forEach(container => {
+                //销毁 Sortable 实例
+                if (container._sortableInstance) {
+                    container._sortableInstance.destroy();
+                    container._sortableInstance = null;
+                }
+                cleanupBlobURLs(container);
+                //清空容器内容
+                container.innerHTML = '';
+            });
+
+            // ---------- 关闭模态框 ----------
+            overlay.classList.remove('active');
         }
 
         // ============================================================
@@ -2889,9 +3884,10 @@
                     node.authors ||= '';
                     node.distribution ||= '';
                     node.habitat ||= '';
+                    node.synonyms ||= [];
                     node.diagnosis ||= '';
                     node.description ||= '';
-                    node.synonyms ||= [];
+                    node.discussion ||= '';
                     node.references ||= [];
                 }
                 if (node.type === 'content') {
@@ -3210,7 +4206,7 @@
             if (!hasSeenWelcome) {
                 // 第一次启动：弹模态框
                 showModal({
-                    title: '🌿 欢迎使用 DHI 分类学笔记',
+                    title: '欢迎使用 DHI 分类学笔记！',
                     content: `
                         <p style="font-size:1rem;line-height:1.8;">
                             数据保存在本地浏览器中，<strong>请定期导出 JSON 备份</strong>，以防缓存清理导致数据丢失。
@@ -3222,7 +4218,8 @@
                             <button class="btn-save" onclick="closeModal();" style="font-size:1rem;padding:8px 32px;">知道了</button>
                         </div>
                     `,
-                    hideFooter: true
+                    hideFooter: true,
+                    allowOverlayClose: true
                 });
                 localStorage.setItem('hasSeenWelcome', 'true');
                 localStorage.setItem('lastBackupCheck', Date.now().toString());
@@ -3249,32 +4246,6 @@
                     localStorage.setItem('lastBackupCheck', Date.now().toString());
                 }
             }
-        }
-
-        // ===== 退出前提醒 =====
-        let hasShownExitWarning = false;
-
-        function setupBeforeUnload() {
-            window.addEventListener('beforeunload', function(e) {
-                if (hasShownExitWarning) return;
-                const lastExport = localStorage.getItem('lastExportTime');
-                if (lastExport) {
-                    const days = (Date.now() - parseInt(lastExport)) / (1000 * 60 * 60 * 24);
-                    if (days > 7) {
-                        hasShownExitWarning = true;
-                        e.preventDefault();
-                        e.returnValue = '您已超过7天未备份数据，建议导出JSON备份后再离开。';
-                        setTimeout(() => { hasShownExitWarning = false; }, 2000);
-                        return;
-                    }
-                }
-                if (!lastExport) {
-                    hasShownExitWarning = true;
-                    e.preventDefault();
-                    e.returnValue = '您尚未导出过数据，建议备份后再离开。';
-                    setTimeout(() => { hasShownExitWarning = false; }, 2000);
-                }
-            });
         }
 
         // ============================================================
@@ -3305,13 +4276,40 @@
             }
 
             renderTree();
+            applyFontPreference();
             showTaxonContent(treeData);
             setupSearch();
             setupLightbox();
             setupSidebarResizer();
 
-            const savedSize = localStorage.getItem('cardSize') || 'medium';
-            setCardSize(savedSize);
+            // 恢复卡片尺寸 —— 从像素值反推滑块位置
+            let savedPx = localStorage.getItem('cardSize');
+            let percent = 50; // 默认
+            if (savedPx) {
+                const px = parseInt(savedPx, 10);
+                if (!isNaN(px) && px >= 120 && px <= 400) {
+                    percent = Math.round((px - 120) / (400 - 120) * 100);
+                } else {
+                    // 兼容旧版 small/medium/large
+                    if (savedPx === 'small') percent = 15;
+                    else if (savedPx === 'medium') percent = 50;
+                    else if (savedPx === 'large') percent = 80;
+                }
+            } else {
+                // 兼容旧版 cardSizePercent（如果存在）
+                const oldPercent = localStorage.getItem('cardSizePercent');
+                if (oldPercent) {
+                    const p = parseInt(oldPercent, 10);
+                    if (!isNaN(p) && p >= 0 && p <= 100) percent = p;
+                    localStorage.removeItem('cardSizePercent');
+                }
+            }
+            percent = Math.min(100, Math.max(0, percent));
+            applyCardSize(percent);
+
+            // 同步更新滑块位置（如果当前有滑块）
+            const slider = document.querySelector('.size-control input[type="range"]');
+            if (slider) slider.value = percent;
 
             if (localStorage.getItem('editMode') === 'true') {
                 setTimeout(() => { if (!isEditMode) toggleEditMode(); }, 100);
@@ -3319,9 +4317,6 @@
 
             // ---- 备份提醒（首次弹模态框，后续 Toast） ----
             setTimeout(checkBackupReminder, 600);
-
-            // ---- 退出前提醒 ----
-            setupBeforeUnload();
 
             document.getElementById('modalCloseBtn').onclick = closeModal;
             document.getElementById('speciesModalClose').onclick = function() {
@@ -3332,11 +4327,62 @@
             });
 
             document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault();
-                    toggleEditMode(); }
+
+                // Ctrl/Cmd + E
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                    e.preventDefault();
+                    toggleEditMode();
+                    return;
+                }
+
+                // ===== Ctrl+Shift+F 切换字体 =====
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+                    e.preventDefault();
+                    toggleFont();
+                    return;
+                }
+
+                if (lightboxState.isOpen) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        prevImage();
+                        return;
+                    }
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        nextImage();
+                        return;
+                    }
+                }
+
+                if (e.key !== 'Escape') return;
+
+                // Lightbox（最高层）
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox?.classList.contains('active')) {
+                    e.preventDefault();
+                    closeLightbox();
+                    return;
+                }
+
+                // Generic Modal（次高层）
+                const genericModal = document.getElementById('genericModal');
+                if (genericModal?.classList.contains('active')) {
+                    e.preventDefault();
+                    tryCloseModal(genericModal);   // 传入参数，明确关闭对象
+                    return;
+                }
+
+                // Species Modal（底层）
+                const speciesModal = document.getElementById('speciesModal');
+                if (speciesModal?.classList.contains('active')) {
+                    e.preventDefault();
+                    speciesModal.classList.remove('active');
+                    return;
+                }
             });
 
-            console.info("DHI Taxonomic Notebook v1.0.0");
+            console.info("DHI Taxonomic Notebook v1.1.0");
         }
 
         document.addEventListener('DOMContentLoaded', init);
