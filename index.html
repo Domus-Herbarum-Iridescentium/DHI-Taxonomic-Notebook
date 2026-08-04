@@ -4,10 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="ProjectLogo3.svg" type="image/svg">
-    <title>DHI Taxonomic Notebook v1.1.0 by [虹蘅馆 Domus Herbārum Īridēscentium]</title>
+    <title>DHI Taxonomic Notebook v1.2.0 by [虹蘅馆 Domus Herbārum Īridēscentium]</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js">
     </script>
     <style>
         /* ===== 全局重置 & 布局 ===== */
@@ -228,7 +230,6 @@
         }
         .search-latin {
             color: #777;
-            font-style: italic;
             font-size: 0.85em;
             margin-left: 6px;
         }
@@ -236,7 +237,6 @@
             display: block;
             font-size: 0.75rem;
             color: #999;
-            font-style: italic;
             margin-top: 1px;
             padding-left: 6px;
         }
@@ -644,7 +644,7 @@
             border: none;
             border-radius: 4px;
             padding: 2px 6px;
-            font-size: 0.7rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.1s;
             color: #555;
@@ -840,6 +840,10 @@
             resize: vertical;
             min-height: 50px;
         }
+        /* 让 rows="1" 的文本域恢复单行高度 */
+        .modal-body .form-group textarea[rows="1"] {
+            min-height: unset;
+        }
         .modal-body .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -983,6 +987,39 @@
             background: #b71c1c;
         }
 
+        /* ===== 新增/编辑卡片式表单分组 ===== */
+        .form-section {
+            margin-bottom: 28px;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        /* 行内字段（两列） */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0; /* 行内组内不需要额外间距 */
+        }
+
+        /* 普通字段组 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
         /* ===== 物种详情弹窗 ===== */
 
         /* 中文俗名 */
@@ -1062,6 +1099,26 @@
             margin: 4px 0 10px;
         }
 
+        /* ===== 物种详情 - 轻量 Section 标题 ===== */
+        .detail-section {
+            margin-bottom: 8px;
+        }
+
+        .detail-section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #333;
+            margin: 26px 0 12px;
+            padding-left: 10px;
+            border-left: 6px solid var(--primary);
+            line-height: 1.4;
+        }
+
+        /* 若无内容则不显示 section（由 JS 控制隐藏） */
+        .detail-section-empty {
+            display: none;
+        }
+
         /* 异名折叠样式 */
         .synonym-section {
             width: 100%;
@@ -1073,14 +1130,20 @@
             gap: 6px;
             cursor: pointer;
             user-select: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #888;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             padding: 0;
             border-radius: 6px;
             transition: color 0.15s ease, background 0.15s ease;
+        }
+
+        /* 修复异名标题与 strong 样式不一致的问题 */
+        .synonym-header > span:first-child {
+            font-size: 1.1rem !important;
+            font-weight: 700 !important;
+            color: #888 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.3px !important;
         }
 
         .synonym-header:hover {
@@ -1140,7 +1203,8 @@
             content: "";
             position: absolute;
             left: 0;
-            top: 0.7em;
+            top: 50%;
+            transform: translateY(-50%);
             width: 4px;
             height: 4px;
             border-radius: 50%;
@@ -1162,7 +1226,7 @@
             color: #2d3338;
         }
 
-        /* 顶部绿色短线 */
+        /* 顶部短线 */
         .section-title::before {
             content: "";
             position: absolute;
@@ -1197,6 +1261,50 @@
         .breadcrumb-current {
             color: #555;
             font-weight: 500;
+        }
+
+        /* 缩小物种详情中 面包屑 与 分类学信息 之间的间距 */
+        .species-detail .modal-body {
+            padding-top: 6px;
+        }
+
+        /* 物候条带样式 */
+        .pheno-item {
+            margin-bottom: 8px;
+        }
+        .pheno-label {
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        .pheno-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            background: #f5f7fa;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #e8ecf0;
+        }
+        .pheno-month {
+            flex: 0 0 calc(100% / 12 - 2px);
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 2px 0;
+            border-radius: 3px;
+            background: #eef1f4;
+            color: #999;
+            transition: background 0.1s;
+        }
+        .pheno-month.active {
+            background: #ded7ff;
+            color: #1a3a6a;
+            font-weight: 500;
+        }
+        .pheno-strip-empty {
+            font-size: 0.8rem;
+            color: #bbb;
+            padding-left: 4px;
         }
 
         /* ===== 灯箱 ===== */
@@ -1394,7 +1502,7 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-resizer" id="sidebarResizer"></div>
         <div class="sidebar-header">
-            <h2><img src="ProjectLogo3.svg" alt="DHI Logo" style="height: 5em; vertical-align: middle; margin-right: 0.2em;"> DHI Taxonomic Notebook<small>v1.1.0</small></h2>
+            <h2><img src="ProjectLogo3.svg" alt="DHI Logo" style="height: 5em; vertical-align: middle; margin-right: 0.2em;"> DHI Taxonomic Notebook<small>v1.2.0</small></h2>
         </div>
 
         <div class="search-container">
@@ -1408,6 +1516,7 @@
             <button onclick="document.getElementById('importFile').click()">⇩ 导入JSON</button>
             <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
             <button onclick="resetAll()" class="btn-danger" style="border-color:#d32f2f;color:#d32f2f;">🗑︎ 重置</button>
+            <button onclick="scanOrphanImages()" style="border-color:#6f5d76;color:#6f5d76;">⌧ 清理孤立图片</button>
         </div>
 
         <div class="tree-wrap" id="treeWrap">
@@ -1473,8 +1582,8 @@
         const DB_NAME = 'TaxonomyImages';
         const STORE_NAME = 'images';
         let db = null;
-
-        const CURRENT_VERSION = 'v1.1.0'
+        const CURRENT_VERSION = 'v1.2.0'
+        const TERMINAL_RANKS = ['species', 'subspecies', 'variety', 'form'];
 
         let _dbErrorShown = false;
 
@@ -1552,6 +1661,18 @@
 
         function generateUUID() {
             return 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        }
+
+        function renderMarkdown(text) {
+            if (!text) return '';
+            const rawHtml = marked.parse(text);
+            if (typeof DOMPurify !== 'undefined') {
+                return DOMPurify.sanitize(rawHtml);
+            } else {
+                // 降级（若未加载成功）
+                console.warn('DOMPurify 未加载，使用原始 HTML');
+                return rawHtml;
+            }
         }
 
         // ============================================================
@@ -1932,11 +2053,14 @@
             id: 'root',
             name: '分类学笔记',
             type: 'taxon',
-            version: CURRENT_VERSION, // 统一版本号
+            version: CURRENT_VERSION,
+            rank: '',
+            rankName: '',
             children: []
         };
 
         let treeData = null;
+        let taxonProfiles = {};
         let allNodes = [];
         let selectedNode = null;
         let isEditMode = false;
@@ -1946,6 +2070,293 @@
         let highlightTimer = null;
 
         function generateId() { return 'n' + (++idCounter); }
+
+        // 递归收集节点及其所有子孙的 ID
+        function collectAllNodeIds(node) {
+            const ids = [node.id];
+            if (node.children) {
+                for (let child of node.children) {
+                    ids.push(...collectAllNodeIds(child));
+                }
+            }
+            return ids;
+        }
+
+        // 原 getTaxonProfile已拆分
+        // ----- 空模板（供安全读取） -----
+        function getEmptyProfile() {
+            return {
+                scientificNameRaw: "",
+                scientificName: "",
+                author: "",
+                commonName: "",
+                distribution: [],          // 改为数组
+                habitat: "",
+                phenology: [],               // 新增
+                localities: [],            // 新增
+                protologue: { text: "", link: "" },      // 新增
+                typeInformation: { text: "", link: "" }, // 新增
+                references: [],            // 改为对象数组（兼容空数组）
+                synonyms: [],
+                diagnosis: "",
+                description: "",
+                discussion: "",
+                createdAt: null,
+                updatedAt: null
+            };
+        }
+
+        function normalizeProfile(profile) {
+            if (!profile) return;
+
+            // ======================
+            // distribution
+            // ======================
+            if (Array.isArray(profile.distribution)) {
+                profile.distribution = profile.distribution.map(item => {
+                    // 旧格式：纯字符串
+                    if (typeof item === 'string') {
+                        return {
+                            country: item,
+                            areas: []
+                        };
+                    }
+                    // 新格式：对象
+                    if (item && typeof item === 'object') {
+                        let areas = [];
+                        if (Array.isArray(item.areas)) {
+                            areas = item.areas.slice();   // 浅拷贝，保持不可变性
+                        } else if (item.areas !== undefined && item.areas !== null && item.areas !== '') {
+                            // 若 areas 为字符串或其他单值，转为单元素数组
+                            areas = [String(item.areas)];
+                        }
+                        return {
+                            country: item.country || '',
+                            areas: areas
+                        };
+                    }
+                    // 异常数据（如 null、数字等）
+                    return {
+                        country: '',
+                        areas: []
+                    };
+                });
+            } else if (typeof profile.distribution === 'string') {
+                profile.distribution = parseDistributionText(profile.distribution);
+            } else {
+                profile.distribution = [];
+            }
+
+            // ======================
+            // references
+            // ======================
+            if (Array.isArray(profile.references)) {
+                profile.references = profile.references.map(item => {
+                    if (typeof item === 'string') {
+                        return parseAnnotatedText(item);
+                    }
+                    // 确保 text 和 link 字段存在
+                    return {
+                        text: (item && typeof item.text === 'string') ? item.text : "",
+                        link: (item && typeof item.link === 'string') ? item.link : ""
+                    };
+                });
+            } else {
+                profile.references = [];
+            }
+
+            // ======================
+            // synonyms
+            // ======================
+            if (Array.isArray(profile.synonyms)) {
+                profile.synonyms = profile.synonyms.map(item => {
+                    if (typeof item === 'string') {
+                        return parseAnnotatedText(item);
+                    }
+                    return {
+                        text: (item && typeof item.text === 'string') ? item.text : "",
+                        link: (item && typeof item.link === 'string') ? item.link : ""
+                    };
+                });
+            } else {
+                profile.synonyms = [];
+            }
+
+            // ======================
+            // protologue / typeInformation
+            // ======================
+            for (const key of ['protologue', 'typeInformation']) {
+                if (typeof profile[key] === 'string') {
+                    profile[key] = {
+                        text: profile[key],
+                        link: ""
+                    };
+                } else if (!profile[key] || typeof profile[key] !== 'object') {
+                    profile[key] = {
+                        text: "",
+                        link: ""
+                    };
+                } else {
+                    // 确保有 text 和 link
+                    profile[key].text = (typeof profile[key].text === 'string') ? profile[key].text : "";
+                    profile[key].link = (typeof profile[key].link === 'string') ? profile[key].link : "";
+                }
+            }
+
+            // ======================
+            // array fields
+            // ======================
+            if (!Array.isArray(profile.phenology)) profile.phenology = [];
+            if (!Array.isArray(profile.localities)) profile.localities = [];
+
+            // ======================
+            // string fallback
+            // ======================
+            profile.habitat = (typeof profile.habitat === 'string') ? profile.habitat : "";
+            profile.diagnosis = (typeof profile.diagnosis === 'string') ? profile.diagnosis : "";
+            profile.description = (typeof profile.description === 'string') ? profile.description : "";
+            profile.discussion = (typeof profile.discussion === 'string') ? profile.discussion : "";
+        }
+
+        function migrateAllProfiles() {
+            let changed = false;
+            for (const id in taxonProfiles) {
+                const profile = taxonProfiles[id];
+                const before = JSON.stringify(profile);
+                normalizeProfile(profile);
+                const after = JSON.stringify(profile);
+                if (before !== after) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                saveData();
+                console.log("✅ Profile 数据结构已自动升级");
+            }
+        }
+
+        // ----- 只读查询（不自动创建） -----
+        function getTaxonProfile(node) {
+            if (!node) return null;
+            return taxonProfiles[node.id] || null;
+        }
+
+        // ----- 安全读取（用于显示，返回完整空模板） -----
+        function getProfileSafe(node) {
+            if (!node) return getEmptyProfile();
+            let profile = getTaxonProfile(node);
+            if (!profile) {
+                profile = getEmptyProfile();
+            } else {
+                // ---------- 标准化旧数据结构 ----------
+                if (!Array.isArray(profile.synonyms)) {
+                    profile.synonyms = [];
+                } else if (profile.synonyms.length > 0 && typeof profile.synonyms[0] === 'string') {
+                    profile.synonyms = profile.synonyms.map(s => {
+                        if (typeof s === 'string') return parseAnnotatedText(s);
+                        return s;
+                    });
+                }
+                // 1. protologue：如果是字符串，转为对象 { text: 原字符串, link: '' }
+                if (typeof profile.protologue === 'string') {
+                    profile.protologue = { text: profile.protologue, link: '' };
+                } else if (!profile.protologue || typeof profile.protologue !== 'object') {
+                    profile.protologue = { text: '', link: '' };
+                }
+                // 2. typeInformation 同理
+                if (typeof profile.typeInformation === 'string') {
+                    profile.typeInformation = { text: profile.typeInformation, link: '' };
+                } else if (!profile.typeInformation || typeof profile.typeInformation !== 'object') {
+                    profile.typeInformation = { text: '', link: '' };
+                }
+                // 3. distribution：如果还是字符串，转为数组（简单处理）
+                if (!Array.isArray(profile.distribution)) {
+                    if (typeof profile.distribution === 'string' && profile.distribution.trim()) {
+                        profile.distribution = [{ country: profile.distribution.trim(), areas: [] }];
+                    } else {
+                        profile.distribution = [];
+                    }
+                }
+                // 4. references：确保是数组
+                if (!Array.isArray(profile.references)) {
+                    profile.references = [];
+                }
+                // 5. localities：确保是数组
+                if (!Array.isArray(profile.localities)) {
+                    profile.localities = [];
+                }
+                // 6. 其他字段保证类型正确
+                // 确保 phenology 是数组
+                if (!Array.isArray(profile.phenology)) {
+                    profile.phenology = [];
+                }
+                if (typeof profile.habitat !== 'string') profile.habitat = '';
+            }
+            return profile;
+        }
+
+        // ----- 确保存在（用于编辑/保存，自动创建并初始化时间戳） -----
+        function ensureTaxonProfile(node) {
+            if (!node) return null;
+            if (!taxonProfiles[node.id]) {
+                taxonProfiles[node.id] = {
+                    scientificNameRaw: "",
+                    scientificName: "",
+                    author: "",
+                    commonName: "",
+                    distribution: [],
+                    habitat: "",
+                    phenology: [],
+                    localities: [],
+                    protologue: { text: "", link: "" },
+                    typeInformation: { text: "", link: "" },
+                    references: [],            // 改为对象数组 [{text, link}]
+                    synonyms: [],
+                    diagnosis: "",
+                    description: "",
+                    discussion: "",
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
+            }
+            const profile = taxonProfiles[node.id];
+            return taxonProfiles[node.id];
+        }
+
+        function ensureAllNodesHaveProfile(root) {
+            if (!root) return;
+            const all = getAllNodes(root);
+            for (const { node } of all) {
+                // 只为 taxon 节点（含物种）创建 profile
+                if (node.type !== 'taxon') continue;
+
+                const profile = ensureTaxonProfile(node);
+
+                // 如果是物种（或拥有物种字段），复制旧字段
+                if (isSpeciesNode(node)) {
+                    const fields = [
+                        'scientificNameRaw', 'scientificName', 'author', 'commonName',
+                        'distribution', 'habitat', 'synonyms',
+                        'diagnosis', 'description', 'discussion', 'references'
+                    ];
+                    for (const field of fields) {
+                        const nodeVal = node[field];
+                        if (nodeVal !== undefined && nodeVal !== null && nodeVal !== '') {
+                            const profileVal = profile[field];
+                            // 如果 profile 中该字段为空（或空数组/空对象），则从 node 复制
+                            if (profileVal === undefined || profileVal === null ||
+                                (typeof profileVal === 'string' && profileVal === '') ||
+                                (Array.isArray(profileVal) && profileVal.length === 0) ||
+                                (typeof profileVal === 'object' && !Array.isArray(profileVal) && 
+                                !profileVal.text && !profileVal.link)) {
+                                // 深拷贝，避免引用
+                                profile[field] = JSON.parse(JSON.stringify(nodeVal));
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
@@ -2016,36 +2427,53 @@
             return result;
         }
 
+        function getRankLabel(node) {
+            if (node.type !== 'taxon') return '';
+            const rank = node.rank || '';
+            const rankName = node.rankName || '';
+            
+            const map = {
+                'domain': '域',
+                'kingdom': '界',
+                'phylum': '门',
+                'class': '纲',
+                'order': '目',
+                'family': '科',
+                'genus': '属',
+                'species': '物种',
+                'subspecies': '亚种',
+                'variety': '变种',
+                'form': '变型'
+            };
+            
+            if (rank === 'custom' && rankName) {
+                return rankName;
+            }
+            return map[rank] || '';
+        }
+
+        function isSpeciesNode(node) {
+            return node && node.type === 'taxon' && TERMINAL_RANKS.includes(node.rank);
+        }
+
         function getDisplayName(node) {
-            if (node.type === 'species') return node.commonName || node.latinName || node.name || '未命名物种';
             if (node.type === 'content') return '🗒︎';
+            const profile = getProfileSafe(node);
+            if (profile.commonName) return profile.commonName;
+            if (profile.scientificName) return profile.scientificName;
             return node.name || '未命名';
         }
 
         function getTypeLabel(node) {
-            switch (node.type) {
-                case 'taxon':
-                    return '分类';
-                case 'species':
-                    return '物种';
-                case 'content':
-                    return '笔记';
-                default:
-                    return '';
-            }
+            if (node.type === 'content') return '笔记';
+            if (isSpeciesNode(node)) return getRankLabel(node) || '物种';
+            return '分类';
         }
 
         function getTypeBadgeClass(node) {
-            switch (node.type) {
-                case 'taxon':
-                    return 'taxon';
-                case 'species':
-                    return 'species';
-                case 'content':
-                    return 'content';
-                default:
-                    return '';
-            }
+            if (node.type === 'content') return 'content';
+            if (isSpeciesNode(node)) return 'species';
+            return 'taxon';
         }
 
         // ===== 重建 idCounter（扫描树中所有节点ID） =====
@@ -2134,21 +2562,23 @@
 
             const tag = document.createElement('span');
             tag.className = 'type-tag';
-            if (node.type === 'species') { tag.classList.add('species-tag');
-                tag.textContent = '物种'; } else if (node.type === 'content') { tag.classList.add('content-tag');
-                tag.textContent = '笔记'; } else { tag.textContent = '分类'; }
+            if (node.type === 'content') {
+                tag.classList.add('content-tag');
+                tag.textContent = '笔记';
+            } else {
+                const rankLabel = getRankLabel(node);
+                tag.textContent = rankLabel || '分类';
+                // 如果节点属于种、亚种、变种、变型，应用蓝色样式
+                if (isSpeciesNode(node)) {
+                    tag.classList.add('species-tag');
+                }
+            }
+
             nameSpan.appendChild(tag);
 
-            if (node.type === 'species' && node.photos && node.photos.length) {
+            if (node.photos && node.photos.length) {
                 const icon = document.createElement('span');
                 icon.textContent = ' 📷︎';
-                icon.style.fontSize = '0.7rem';
-                icon.style.color = '#888';
-                nameSpan.appendChild(icon);
-            }
-            if (node.type === 'taxon' && node.photos && node.photos.length) {
-                const icon = document.createElement('span');
-                icon.textContent = ' 🖼︎';
                 icon.style.fontSize = '0.7rem';
                 icon.style.color = '#888';
                 nameSpan.appendChild(icon);
@@ -2159,43 +2589,40 @@
             const actions = document.createElement('span');
             actions.className = 'node-actions';
             if (node.type !== 'root') {
-                if (node.type === 'taxon') {
+                // --- 添加按钮：仅对普通分类（非物种）显示 ---
+                if (node.type === 'taxon' && !isSpeciesNode(node)) {
                     const b1 = document.createElement('button');
                     b1.textContent = '＋';
-                    b1.style.fontWeight = 'bold'
+                    b1.style.fontWeight = 'bold';
                     b1.title = '添加子分类';
-                    b1.onclick = e => { e.stopPropagation();
-                        showAddTaxonModal(node); };
+                    b1.onclick = e => { e.stopPropagation(); showAddTaxonModal(node); };
                     actions.appendChild(b1);
                     const b2 = document.createElement('button');
                     b2.textContent = '⚘︎';
-                    b2.style.fontWeight = 'bold'
+                    b2.style.fontWeight = 'bold';
                     b2.title = '添加物种';
-                    b2.onclick = e => { e.stopPropagation();
-                        showAddSpeciesModal(node); };
+                    b2.onclick = e => { e.stopPropagation(); showAddSpeciesModal(node); };
                     actions.appendChild(b2);
                     const b3 = document.createElement('button');
                     b3.textContent = '🗒︎';
-                    b3.style.fontWeight = 'bold'
+                    b3.style.fontWeight = 'bold';
                     b3.title = '添加笔记';
-                    b3.onclick = e => { e.stopPropagation();
-                        showAddContentModal(node); };
+                    b3.onclick = e => { e.stopPropagation(); showAddContentModal(node); };
                     actions.appendChild(b3);
                 }
+                // --- 编辑和删除按钮始终显示 ---
                 const bEdit = document.createElement('button');
                 bEdit.textContent = '✎';
-                bEdit.style.fontWeight = 'bold'
+                bEdit.style.fontWeight = 'bold';
                 bEdit.title = '编辑';
-                bEdit.onclick = e => { e.stopPropagation();
-                    openEditor(node); };
+                bEdit.onclick = e => { e.stopPropagation(); openEditor(node); };
                 actions.appendChild(bEdit);
                 const bDel = document.createElement('button');
                 bDel.textContent = '✕';
-                bDel.style.fontWeight = 'bold'
+                bDel.style.fontWeight = 'bold';
                 bDel.className = 'del-btn';
                 bDel.title = '删除';
-                bDel.onclick = e => { e.stopPropagation();
-                    deleteNode(node.id); };
+                bDel.onclick = e => { e.stopPropagation(); deleteNode(node.id); };
                 actions.appendChild(bDel);
             }
             label.appendChild(actions);
@@ -2204,7 +2631,8 @@
                 label.addEventListener('click', function(e) {
                     if (e.target.closest('button')) return;
                     if (node.type === 'content') { showContentDetail(node); return; }
-                    if (node.type === 'species') { showSpeciesDetail(node); return; }
+                    if (isSpeciesNode(node)) { showSpeciesDetail(node); return; }
+                    // 普通分类群：展开/折叠 + 显示内容
                     const cd = li.querySelector(':scope > .children-container');
                     if (cd) {
                         const open = cd.classList.contains('open');
@@ -2498,46 +2926,51 @@ function initTreeSortable() {
             const displayName = getDisplayName(item);
             const hasPhoto = (item.photos && item.photos.length > 0);
             const firstPhoto = hasPhoto ? item.photos[0] : null;
+            const isSpecies = isSpeciesNode(item);
 
             let extraClass = '';
             let bodyExtra = '';
             let subInfo = '';
             let clickHandler = '';
-            let imgHtml = '';
+            if (type === 'content') {
+                clickHandler = `showContentDetail(findNodeById(treeData, '${item.id}'))`;
+            } else if (isSpecies) {
+                clickHandler = `showSpeciesDetail(findNodeById(treeData, '${item.id}'))`;
+            } else {
+                clickHandler = `showTaxonContent(findNodeById(treeData, '${item.id}'))`;
+            }
 
+            let imgHtml = '';
             if (firstPhoto) {
                 const src = firstPhoto.src || '';
                 const caption = firstPhoto.caption || '';
                 const isRef = firstPhoto.isImageRef || false;
                 const uuid = firstPhoto.uuid || '';
-
                 if (isRef && uuid) {
                     imgHtml =
                         `<img data-img-uuid="${uuid}" data-caption="${caption}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${displayName}" loading="lazy" />`;
                 } else if (src && (src.startsWith('data:') || src.startsWith('http') || src.startsWith('/'))) {
                     imgHtml =
                         `<img src="${src}" data-src="${src}" data-caption="${caption}" alt="${displayName}" loading="lazy" />`;
-                } else {
-                    imgHtml = '';
                 }
             }
 
             if (type === 'content') {
                 extraClass = 'content-card';
-                bodyExtra = `<div class="content-html">${marked.parse(item.html || '')}</div>`;
-                clickHandler = `showContentDetail(findNodeById(treeData, '${item.id}'))`;
-            } else if (type === 'taxon') {
+                bodyExtra = `<div class="content-html">${renderMarkdown(item.html || '')}</div>`;
+            } else if (isSpecies) {
+                // 物种卡片
+                    const profile = getProfileSafe(item);
+                    const sciName = profile.scientificName || item.scientificName || '';
+                    const author = profile.author || item.author || '';
+                    const commonName = profile.commonName || item.commonName || '';
+                    const fallbackName = commonName || item.name || '';
+                    let nameDisplay = sciName ? formatScientificNameWithAuthor(sciName, author) : fallbackName;
+                    subInfo = `<div class="sub">${nameDisplay}${hasPhoto ? ' <span class="photo-count">· 📷︎ ' + item.photos.length + '张</span>' : ''}</div>`;
+            } else {
+                // 普通分类群卡片
                 const count = (item.children || []).filter(c => c.type !== 'content').length;
                 subInfo = `<div class="sub">${count} 个子项 ${hasPhoto ? '· 🖼︎' : ''}</div>`;
-                clickHandler = `showTaxonContent(findNodeById(treeData, '${item.id}'))`;
-            } else if (type === 'species') {
-                const latin = item.latinName || '';          // 只取拉丁学名
-                const author = item.authors ? item.authors : '';
-                const fallbackName = item.commonName || item.name || '';  // 备选显示名
-                let latinDisplay = latin ? `<i>${latin}</i>` : fallbackName;  // 有拉丁名就斜体，否则显示普通名
-                let authorDisplay = author ? ' ' + author : '';
-                subInfo = `<div class="sub">${latinDisplay}${authorDisplay}${hasPhoto ? ' <span class="photo-count">· 📷︎ ' + item.photos.length + '张</span>' : ''}</div>`;
-                clickHandler = `showSpeciesDetail(findNodeById(treeData, '${item.id}'))`;
             }
 
             const cardId = `card_${item.id}`;
@@ -2548,7 +2981,9 @@ function initTreeSortable() {
                     <div class="card-body">
                         <div class="name">
                             ${displayName}
-                            <span class="type-badge ${typeBadge}">${getTypeLabel(item)}</span>
+                            <span class="type-badge ${typeBadge}">
+                                ${type === 'content' ? '笔记' : (getRankLabel(item) || '分类')}
+                            </span>
                         </div>
                         ${subInfo}
                         ${bodyExtra}
@@ -2646,146 +3081,222 @@ function initTreeSortable() {
             const input = document.getElementById('searchInput');
             const suggestions = document.getElementById('searchSuggestions');
 
-        function getSearchScore(match, query, node) {
-            const text = (match.text || '').toLowerCase();
-            let score = 0;
+            function getSearchScore(match, query, node) {
+                const text = (match.text || '').toLowerCase();
+                let score = 0;
 
-            // 1. 完整匹配（最高优先级）
-            if (text === query) {
-                score += 1000;
-            }
+                if (text === query) score += 300;
+                if (node.type === 'taxon') score += 100;
 
-            // 2. 分类阶元优先（适用于模糊搜索）
-            if (node.type === 'taxon') {
-                score += 100;
-            }
-
-            // 3. 匹配类型权重
-            switch (match.type) {
-                case 'name':
-                    score += 80;      // 分类群名称
-                    break;
-                case 'latinName':
-                    score += 70;      // 物种当前拉丁学名
-                    break;
-                case 'commonName':
-                    score += 50;      // 中文俗名
-                    break;
-                case 'synonym':
-                    score += 20;      // 异名
-                    break;
-                default:
-                    score += 10;
-            }
-
-            // 4. 开头匹配优于中间包含
-            if (text.startsWith(query)) {
-                score += 30;
-            }
-
-            return score;
-        }
-
-        input.addEventListener('input', function() {
-            const query = this.value.trim().toLowerCase();
-            if (!query) { suggestions.classList.remove('active'); return; }
-
-            // ----- 匹配阶段：记录所有匹配项 -----
-            const matches = [];
-            for (const item of allNodes) {
-                const node = item.node;
-                const found = [];
-
-                // 1. 中文俗名
-                if (node.commonName && node.commonName.toLowerCase().includes(query)) {
-                    found.push({ type: 'commonName', text: node.commonName });
+                switch (match.type) {
+                    case 'commonName': score += 80; break;
+                    case 'scientificName': score += 70; break;
+                    case 'author': score += 65; break;
+                    case 'synonym': score += 50; break;
+                    case 'distribution': score += 40; break;
+                    case 'habitat': score += 35; break;
+                    case 'phenology': score += 35; break;
+                    //case 'diagnosis': score += 10; break; 本版本禁用
+                    // case 'description': score += 30; break; 本版本禁用
+                    //case 'protologue': score += 20; break;
+                    //case 'typeInformation': score += 20; break;
+                    //case 'references': score += 20; break;
+                    // case 'discussion': score += 15; break; 本版本禁用
+                   //case 'ecology': score += 15; break;
+                    default: score += 10;
                 }
 
-                // 2. 拉丁学名
-                if (node.latinName && node.latinName.toLowerCase().includes(query)) {
-                    found.push({ type: 'latinName', text: node.latinName });
-                }
+                if (text.startsWith(query)) score += 30;
+                return score;
+            }
 
-                // 3. 异名（每个异名单独作为一条匹配）
-                if (node.synonyms && node.synonyms.length) {
-                    for (const syn of node.synonyms) {
-                        if (syn.toLowerCase().includes(query)) {
-                            found.push({ type: 'synonym', text: syn });
+            input.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                if (!query) { suggestions.classList.remove('active'); return; }
+
+                const matches = [];
+                for (const item of allNodes) {
+                    const node = item.node;
+                    const profile = getProfileSafe(node);
+                    if (!profile) continue;
+
+                    const found = [];
+
+                    // ---- 高权重 ----
+                    // 中文名
+                    if (profile.commonName && profile.commonName.toLowerCase().includes(query)) {
+                        found.push({ type: 'commonName', text: profile.commonName });
+                    }
+                    // 学名
+                    if (profile.scientificName && profile.scientificName.toLowerCase().includes(query)) {
+                        found.push({ type: 'scientificName', text: profile.scientificName });
+                    }
+                    // 命名人
+                    if (profile.author && profile.author.toLowerCase().includes(query)) {
+                        found.push({ type: 'author', text: profile.author });
+                    }
+                    // 异名
+                    if (Array.isArray(profile.synonyms)) {
+                        for (const syn of profile.synonyms) {
+                            if (syn.text && syn.text.toLowerCase().includes(query)) {
+                                found.push({ type: 'synonym', text: syn.text });
+                            }
                         }
                     }
-                }
 
-                // 4. 通用名称（name）
-                if (node.name && node.name.toLowerCase().includes(query)) {
-                    found.push({ type: 'name', text: node.name });
-                }
-
-                // 如果有匹配，计算该节点的最高分
-                if (found.length > 0) {
-                    let bestScore = -Infinity;
-                    for (const m of found) {
-                        const score = getSearchScore(m, query, node);
-                        if (score > bestScore) bestScore = score;
+                    // ---- 中等权重 ----
+                    // 分布
+                    if (Array.isArray(profile.distribution) && profile.distribution.length) {
+                        const matchedItems = matchDistribution(profile.distribution, query);
+                        if (matchedItems.length) {
+                            const displayText = matchedItems.map(formatDistributionItem).join('；');
+                            found.push({ type: 'distribution', text: displayText });
+                        }
                     }
-                    matches.push({
-                        node: node,
-                        matches: found,
-                        score: bestScore
-                    });
-                }
-            }
-
-            // ----- 排序：按分数降序，同分按名称字母升序 -----
-            matches.sort((a, b) => {
-                if (a.score !== b.score) return b.score - a.score;
-                return getDisplayName(a.node).localeCompare(getDisplayName(b.node));
-            });
-
-            // ----- 渲染建议列表（与之前相同，仅适配 matches 结构） -----
-            if (matches.length === 0) {
-                suggestions.innerHTML = '<div class="suggestion-item" style="color:#888;">无匹配结果</div>';
-            } else {
-                let html = '';
-                const maxShow = Math.min(matches.length, 25);
-                for (let i = 0; i < maxShow; i++) {
-                    const { node, matches: matchList } = matches[i];
-                    const typeLabel = getTypeLabel(node);
-                    const badgeClass = node.type === 'species' ? 'species' : 'taxon';
-                    const displayName = getDisplayName(node);
-
-                    let nameHtml = displayName;
-                    if (node.type === 'species' && node.latinName) {
-                        nameHtml += ` <span class="search-latin">${node.latinName}</span>`;
+                    // 生境
+                    if (profile.habitat && profile.habitat.toLowerCase().includes(query)) {
+                        found.push({ type: 'habitat', text: profile.habitat });
+                    }
+                    // ---- phenology（按月份匹配） ----
+                    const phenologyItems = profile.phenology || [];
+                    if (phenologyItems.length) {
+                        // 尝试从 query 中提取数字（月份）
+                        const monthMatch = query.match(/(\d+)/);
+                        if (monthMatch) {
+                            const monthNum = parseInt(monthMatch[1], 10);
+                            if (monthNum >= 1 && monthNum <= 12) {
+                                for (const item of phenologyItems) {
+                                    if (item.months && item.months.includes(monthNum)) {
+                                        found.push({ type: 'phenology', text: item.label + ': ' + item.value });
+                                    }
+                                }
+                            }
+                        }
+                        // 可选：如果 query 包含“全年”也匹配全年
+                        if (query.includes('全年')) {
+                            for (const item of phenologyItems) {
+                                if (item.months && item.months.length === 12) {
+                                    found.push({ type: 'phenology', text: item.label + ': ' + item.value });
+                                }
+                            }
+                        }
                     }
 
-                    let extraHtml = '';
-                    for (const m of matchList) {
-                        if (m.type === 'synonym') {
+                    // ---- 低权重 ----
+                    // 原始发表
+                    //if (profile.protologue && profile.protologue.text && profile.protologue.text.toLowerCase().includes(query)) {
+                    //    found.push({ type: 'protologue', text: profile.protologue.text });
+                    //}
+                    // 模式信息
+                    //if (profile.typeInformation && profile.typeInformation.text && profile.typeInformation.text.toLowerCase().includes(query)) {
+                    //    found.push({ type: 'typeInformation', text: profile.typeInformation.text });
+                    //}
+                    // 参考文献
+                    //if (Array.isArray(profile.references)) {
+                    //    for (const ref of profile.references) {
+                    //        if (ref.text && ref.text.toLowerCase().includes(query)) {
+                    //            found.push({ type: 'references', text: ref.text });
+                    //        }
+                    //    }
+                    //}
+                    // 鉴定要点  已禁用
+                    //if (profile.diagnosis && profile.diagnosis.toLowerCase().includes(query)) {
+                    //    found.push({ type: 'diagnosis', text: profile.diagnosis });
+                    //}
+                    // 描述 已禁用
+                    //if (profile.description && profile.description.toLowerCase().includes(query)) {
+                    //    found.push({ type: 'description', text: profile.description });
+                    //}
+                    // 讨论
+                    //if (profile.discussion && profile.discussion.toLowerCase().includes(query)) {
+                    //    found.push({ type: 'discussion', text: profile.discussion });
+                    //}
+
+                    // 如果有匹配，计算最佳分数
+                    if (found.length > 0) {
+                        let bestScore = -Infinity;
+                        for (const m of found) {
+                            const score = getSearchScore(m, query, node);
+                            if (score > bestScore) bestScore = score;
+                        }
+                        matches.push({
+                            node: node,
+                            matches: found,
+                            score: bestScore
+                        });
+                    }
+                }
+
+                // 排序
+                matches.sort((a, b) => {
+                    if (a.score !== b.score) return b.score - a.score;
+                    return getDisplayName(a.node).localeCompare(getDisplayName(b.node));
+                });
+
+                // 渲染建议
+                if (matches.length === 0) {
+                    suggestions.innerHTML = '<div class="suggestion-item" style="color:#888;">无匹配结果</div>';
+                } else {
+                    let html = '';
+                    const maxShow = Math.min(matches.length, 25);
+                    for (let i = 0; i < maxShow; i++) {
+                        const { node, matches: matchList } = matches[i];
+                        const profile = getProfileSafe(node);
+                        const commonName = profile.commonName || '';
+                        const sciName = profile.scientificName || '';
+                        const author = profile.author || '';
+                        const displayName = commonName || node.name || '未命名';
+                        const latinDisplay = formatScientificNameWithAuthor(sciName, author);
+                        const typeLabel = getTypeLabel(node);
+                        const badgeClass = isSpeciesNode(node) ? 'species' : 'taxon';
+
+                        // ---- 构建匹配提示 ----
+                        let extraHtml = '';
+                        const typeMap = {
+                            'synonym': '异名',
+                            'distribution': '分布',
+                            'habitat': '生境',
+                            //'diagnosis': '鉴定要点',
+                            //'description': '描述',
+                            //'protologue': '原始发表',
+                            //'typeInformation': '模式信息',
+                            //'references': '参考文献',
+                            //'discussion': '讨论',
+                            'phenology': '物候'
+                        };
+                        for (const m of matchList) {
+                            // 跳过中文名、学名、命名人（主标题和副标题已显示）
+                            if (m.type === 'commonName' || m.type === 'scientificName' || m.type === 'author') continue;
+                            const label = typeMap[m.type] || m.type;
+                                let displayText = m.text;
+                                if (m.type === 'synonym') {
+                                    displayText = formatScientificNameText(m.text);
+                                }
                             extraHtml += `
                                 <div class="search-match-hint">
-                                    <span class="synonym-icon">[异名]</span> ${m.text}
+                                    <span class="synonym-icon">[${label}]</span> ${displayText}
                                 </div>
                             `;
                         }
-                        // 可扩展其他类型提示
+
+                        html += `
+                            <div class="suggestion-item" data-node-id="${node.id}">
+                                <span>
+                                    ${displayName}
+                                    ${latinDisplay ? `<span class="search-latin">${latinDisplay}</span>` : ''}
+                                    ${extraHtml}
+                                </span>
+                                <span class="badge ${badgeClass}">${typeLabel}</span>
+                            </div>
+                        `;
                     }
-
-                    html += `
-                        <div class="suggestion-item" data-node-id="${node.id}">
-                            <span>
-                                ${nameHtml}
-                                ${extraHtml}
-                            </span>
-                            <span class="badge ${badgeClass}">${typeLabel}</span>
-                        </div>
-                    `;
+                    suggestions.innerHTML = html;
                 }
-                suggestions.innerHTML = html;
-            }
 
-            suggestions.classList.add('active');
-        });
+                suggestions.classList.add('active');
+            });
 
+            // 点击建议跳转
             suggestions.addEventListener('click', function(e) {
                 const item = e.target.closest('.suggestion-item');
                 if (!item) return;
@@ -2794,7 +3305,6 @@ function initTreeSortable() {
                 if (!node) return;
                 suggestions.classList.remove('active');
                 input.value = '';
-                // 统一使用 jumpToNode
                 jumpToNode(node);
             });
 
@@ -2849,7 +3359,7 @@ function initTreeSortable() {
             expandPath(node.id);
             selectNode(node);
             
-            if (node.type === 'species') {
+            if (isSpeciesNode(node)) {
                 showSpeciesDetail(node);
             } else if (node.type === 'content') {
                 showContentDetail(node);
@@ -3176,6 +3686,636 @@ function initTreeSortable() {
             });
         }
 
+        function parseScientificName(input) {
+            let raw = input.trim();
+            if (!raw) return { scientificName: '', author: '', raw, confidence: 'low', parsed: false };
+
+            // ---------- 预处理：乘号与后续字母之间插入空格 ----------
+            raw = raw.replace(/(^|\s)(×)(?=[A-Za-z])/g, '$1$2 ');
+
+            // ---------- 1. 分离 " in " 文献引用 ----------
+            let citation = '';
+            let mainTokens = raw.split(/\s+/).filter(t => t.length > 0);
+            const inIdx = mainTokens.findIndex(t => t.toLowerCase() === 'in');
+            if (inIdx !== -1 && inIdx < mainTokens.length - 1) {
+                const after = mainTokens.slice(inIdx + 1);
+                if (after.some(t => /^[A-Z]/.test(t) || /^\d/.test(t))) {
+                    citation = after.join(' ');
+                    mainTokens = mainTokens.slice(0, inIdx);
+                }
+            }
+
+            // ---------- 2. 辅助定义 ----------
+            const ranks = new Set(['subsp.', 'ssp.', 'var.', 'f.', 'forma', 'subvar.', 'subsp', 'ssp', 'var', 'f', 'forma', 'subvar']);
+            const modifiers = new Set(['cf.', 'aff.', 'sp.', 'cf', 'aff', 'sp', '?']);
+            const connectives = new Set(['ex', 'et', '&']);
+            const particles = new Set([
+                'van', 'von', 'de', 'der', 'la', 'le', 'du', 'des', 'del',
+                'ten', 'ter', 'den', 'da', 'do', 'dos', 'das', 'della', 'delle'
+            ]);
+
+            const isRank = t => ranks.has(t) || ranks.has(t.toLowerCase());
+            const isModifier = t => modifiers.has(t) || modifiers.has(t.toLowerCase());
+            const isEpithet = t => /^[a-z]/.test(t) && !isRank(t) && !isModifier(t) && !connectives.has(t.toLowerCase()) && !particles.has(t.toLowerCase());
+            const isAuthorLike = t => /^[A-Z]/.test(t) || /[()]/.test(t) || /^\d/.test(t);
+            const isHybrid = t => t === '×';
+
+            // ---------- 3. 核心解析 ----------
+            let scientificName = '';
+            let author = '';
+
+            // 检查是否存在等级词
+            const rankIdx = mainTokens.findIndex(t => isRank(t));
+
+            if (rankIdx !== -1) {
+                // ---- 存在等级词：等级词之前全部为学名，等级词及之后按规则处理 ----
+                const sciParts = mainTokens.slice(0, rankIdx); // 等级词之前
+                sciParts.push(mainTokens[rankIdx]); // 等级词本身
+                let i = rankIdx + 1;
+                // 继续收集等级词之后的学名部分（种下加词、修饰词、后续等级词等）
+                while (i < mainTokens.length) {
+                    const token = mainTokens[i];
+                    if (isRank(token) || isModifier(token) || isEpithet(token) || isHybrid(token)) {
+                        sciParts.push(token);
+                        i++;
+                    } else {
+                        // 遇到作者特征或连接词，则结束学名收集，剩余为作者
+                        break;
+                    }
+                }
+                // 剩余部分为作者（包括连接词等）
+                const authorParts = mainTokens.slice(i);
+                scientificName = sciParts.join(' ');
+                author = authorParts.join(' ');
+            } else {
+                // ---- 无等级词：使用精细的角色标注逻辑 ----
+                const tokens = mainTokens;
+                const roles = [];
+                let i = 0;
+                const len = tokens.length;
+
+                // 杂交符号开头
+                if (i < len && isHybrid(tokens[i])) {
+                    roles.push({ token: tokens[i], role: 'sci' });
+                    i++;
+                }
+
+                // 必须有属名
+                if (i < len && /^[A-Z]/.test(tokens[i]) && !isRank(tokens[i]) && !isModifier(tokens[i]) && !connectives.has(tokens[i].toLowerCase())) {
+                    roles.push({ token: tokens[i], role: 'sci' });
+                    i++;
+                } else {
+                    // 回退：整个字符串作为学名
+                    return { scientificName: raw, author: '', raw, confidence: 'low', parsed: false };
+                }
+
+                // 种加词（可选）
+                if (i < len && isEpithet(tokens[i])) {
+                    roles.push({ token: tokens[i], role: 'sci' });
+                    i++;
+                }
+
+                while (i < len) {
+                    const token = tokens[i];
+                    const lower = token.toLowerCase();
+
+                    // 介词 → 作者及之后
+                    if (particles.has(lower)) {
+                        roles.push({ token, role: 'author' });
+                        i++;
+                        while (i < len) {
+                            roles.push({ token: tokens[i], role: 'author' });
+                            i++;
+                        }
+                        break;
+                    }
+
+                    // 等级词
+                    if (isRank(token)) {
+                        if (i + 1 < len && isEpithet(tokens[i + 1])) {
+                            roles.push({ token, role: 'sci' });
+                            i++;
+                            roles.push({ token: tokens[i], role: 'sci' });
+                            i++;
+                        } else {
+                            roles.push({ token, role: 'author' });
+                            i++;
+                        }
+                        continue;
+                    }
+
+                    // 修饰词
+                    if (isModifier(token)) {
+                        roles.push({ token, role: 'sci' });
+                        i++;
+                        continue;
+                    }
+
+                    // 连接词 → 作者及之后
+                    if (connectives.has(lower)) {
+                        roles.push({ token, role: 'author' });
+                        i++;
+                        while (i < len) {
+                            roles.push({ token: tokens[i], role: 'author' });
+                            i++;
+                        }
+                        break;
+                    }
+
+                    // 杂交符号
+                    if (isHybrid(token)) {
+                        roles.push({ token, role: 'sci' });
+                        i++;
+                        continue;
+                    }
+
+                    // 大写/括号/数字 → 作者
+                    if (/^[A-Z]/.test(token) || /[()]/.test(token) || /^\d/.test(token)) {
+                        roles.push({ token, role: 'author' });
+                        i++;
+                        continue;
+                    }
+
+                    // 小写有效种下加词 → 学名
+                    if (isEpithet(token)) {
+                        roles.push({ token, role: 'sci' });
+                        i++;
+                        continue;
+                    }
+
+                    // 其他 → 作者
+                    roles.push({ token, role: 'author' });
+                    i++;
+                }
+
+                scientificName = roles.filter(r => r.role === 'sci').map(r => r.token).join(' ');
+                author = roles.filter(r => r.role === 'author').map(r => r.token).join(' ');
+            }
+
+            // ---------- 4. 附加引文到作者 ----------
+            if (citation) {
+                author = (author ? author + ' in ' : 'in ') + citation;
+            }
+
+            // ---------- 5. 可信度计算 ----------
+            const sciTokens = scientificName.split(/\s+/);
+            const meaningful = sciTokens.filter(t => !isRank(t) && !isModifier(t) && t !== '×' && !connectives.has(t.toLowerCase())).length;
+            const parsed = author.length > 0;
+            let confidence = 'low';
+            if (parsed && meaningful >= 2) confidence = 'high';
+            else if (!parsed && meaningful >= 2) confidence = 'medium';
+
+            return { scientificName, author, raw, confidence, parsed };
+        }
+
+        function formatScientificNameText(raw) {
+            if (!raw || typeof raw !== 'string') return raw;
+            const parsed = parseScientificName(raw);
+            if (parsed.scientificName) {
+                return formatScientificNameWithAuthor(parsed.scientificName, parsed.author);
+            }
+            return raw; // 回退
+        }
+
+        function parseAnnotatedText(input) {
+            if (!input || typeof input !== 'string') {
+                return { text: '', link: '' };
+            }
+
+            const trimmed = input.trim();
+            if (!trimmed) {
+                return { text: '', link: '' };
+            }
+
+            const separatorIndex = trimmed.indexOf('|');
+
+            // 文本|链接
+            if (separatorIndex !== -1) {
+                const text = trimmed.slice(0, separatorIndex).trim();
+                let link = trimmed.slice(separatorIndex + 1).trim();
+
+                link = link.replace(/[。.,，；;]+$/, '');
+
+                return {
+                    text,
+                    link
+                };
+            }
+
+            // 纯 URL
+            if (/^https?:\/\/\S+$/.test(trimmed)) {
+                let link = trimmed.replace(/[。.,，；;]+$/, '');
+
+                return {
+                    text: '',
+                    link
+                };
+            }
+
+            // 普通文本
+            return {
+                text: trimmed,
+                link: ''
+            };
+        }
+
+        function renderAnnotatedText(item) {
+            if (!item) return '';
+
+            if (typeof item === 'string') {
+                return item;
+            }
+
+            const text = item.text || '';
+            const link = item.link || '';
+
+            if (link) {
+                // 有链接则显示为可点击文本，不显示裸 URL
+                return `<a href="${link}" target="_blank" rel="noopener noreferrer">${text || link}</a>`;
+            }
+
+            return text;
+        }
+
+        function parseDistributionText(input) {
+            if (!input || typeof input !== 'string') {
+                return [];
+            }
+            const trimmed = input.trim();
+            if (!trimmed) return [];
+
+            // ---------- 第一步：按括号外的国家分隔符拆分成多个条目 ----------
+            const rawParts = [];
+            let currentPart = '';
+            let inBracket = false;
+
+            // 国家分隔符（仅当不在括号内时生效）
+            const isCountrySeparator = (ch) => {
+                return ch === '\n' || ch === '；' || ch === ';' || ch === '，' || ch === ',' || ch === '、';
+            };
+
+            for (let i = 0; i < trimmed.length; i++) {
+                const ch = trimmed[i];
+
+                // 括号切换状态
+                if (ch === '（' || ch === '(') {
+                    inBracket = true;
+                    currentPart += ch;
+                    continue;
+                }
+                if (ch === '）' || ch === ')') {
+                    inBracket = false;
+                    currentPart += ch;
+                    continue;
+                }
+
+                // 如果不在括号内且遇到国家分隔符，则结束当前条目
+                if (!inBracket && isCountrySeparator(ch)) {
+                    if (currentPart.trim()) {
+                        rawParts.push(currentPart.trim());
+                    }
+                    currentPart = '';
+                    continue;
+                }
+
+                // 普通字符
+                currentPart += ch;
+            }
+
+            // 最后一段
+            if (currentPart.trim()) {
+                rawParts.push(currentPart.trim());
+            }
+
+            // ---------- 第二步：解析每个条目（国家 + 地区） ----------
+            const result = [];
+            for (let part of rawParts) {
+                part = part.trim();
+                if (!part) continue;
+
+                // 尝试匹配 "国家（地区）" 或 "国家 (地区)"
+                let match = part.match(/^(.*?)[（(]\s*(.*?)\s*[）)]\s*$/);
+                if (match) {
+                    const country = match[1].trim();
+                    const areasRaw = match[2].trim();
+                    // 地区分隔符：中文逗号、英文逗号、顿号
+                    const areas = areasRaw ? areasRaw.split(/[，,、]+/).map(s => s.trim()).filter(Boolean) : [];
+                    result.push({ country, areas });
+                } else {
+                    // 无括号，整个作为国家
+                    result.push({ country: part, areas: [] });
+                }
+            }
+
+            return result;
+        }
+
+        // ===== 匹配分布结构化数据，返回匹配的最小单元 =====
+        function matchDistribution(distribution, query) {
+            if (!Array.isArray(distribution) || query === undefined || query === null) {
+                return [];
+            }
+
+            const q = String(query).toLowerCase().trim();
+            if (!q) return [];
+
+            const results = [];
+
+            for (const item of distribution) {
+                const countryRaw = item.country || '';
+                const country = countryRaw.toLowerCase();
+                const areas = Array.isArray(item.areas) ? item.areas : [];
+
+                // 情况1：国家匹配 → 返回该国家完整分布
+                if (country.includes(q)) {
+                    results.push({
+                        country: countryRaw,
+                        areas: areas.slice()
+                    });
+                    continue;
+                }
+
+                // 情况2：地区匹配 → 仅返回命中的地区
+                const matchedAreas = areas.filter(area =>
+                    typeof area === 'string' &&
+                    area.toLowerCase().includes(q)
+                );
+
+                if (matchedAreas.length > 0) {
+                    results.push({
+                        country: countryRaw,
+                        areas: matchedAreas
+                    });
+                }
+            }
+
+            return results;
+        }
+
+
+        // ===== 格式化单个分布项为显示字符串 =====
+        function formatDistributionItem(item) {
+            if (!item) return '';
+
+            const country = item.country || '';
+            const areas = Array.isArray(item.areas) ? item.areas : [];
+
+            if (areas.length === 0) {
+                return country;
+            }
+
+            return `${country}（${areas.join('，')}）`;
+        }
+
+        function parsePhenologyMonths(value) {
+            if (!value || typeof value !== 'string') return [];
+
+            const trimmed = value.trim();
+            if (!trimmed) return [];
+
+            // ---------- 第一步：移除跨年干扰词 ----------
+            let cleaned = trimmed.replace(/(?:翌年|第二年|次年|来年|明年|下一年|隔年)/g, '');
+
+            // ---------- 第二步：将非数字和非分隔符的字符替换为空格 ----------
+            // 允许的字符：数字、-、~、－、～、至
+            // 其他字符（包括中文、逗号、句号等）替换为空格
+            const allowedChars = /[^0-9\-~－～至]/g;
+            cleaned = cleaned.replace(allowedChars, ' ');
+
+            // ---------- 第三步：合并连续空格，去除首尾空格 ----------
+            cleaned = cleaned.replace(/\s+/g, ' ').trim();
+
+            // ---------- 第四步：检测“全年” ----------
+            if (/全年/.test(trimmed)) {
+                return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            }
+
+            // ---------- 第五步：提取所有数字（离散月份） ----------
+            const allNumbers = (cleaned.match(/\d+/g) || [])
+                .map(Number)
+                .filter(n => n >= 1 && n <= 12);
+
+            // ---------- 第六步：提取区间 ----------
+            const rangeMatches = [...cleaned.matchAll(/(\d+)\s*(?:[-~－～]|至)\s*(\d+)/g)];
+            const orderedMonths = [];
+            let hasCrossYear = false;
+
+            for (const match of rangeMatches) {
+                const start = parseInt(match[1], 10);
+                const end = parseInt(match[2], 10);
+                if (start < 1 || start > 12 || end < 1 || end > 12) continue;
+
+                if (start > end) {
+                    hasCrossYear = true;
+                    for (let m = start; m <= 12; m++) orderedMonths.push(m);
+                    for (let m = 1; m <= end; m++) orderedMonths.push(m);
+                } else {
+                    for (let m = start; m <= end; m++) orderedMonths.push(m);
+                }
+            }
+
+            // ---------- 第七步：合并离散数字（去重，保持顺序） ----------
+            const existingSet = new Set(orderedMonths);
+            for (const num of allNumbers) {
+                if (!existingSet.has(num)) {
+                    orderedMonths.push(num);
+                    existingSet.add(num);
+                }
+            }
+
+            // ---------- 第八步：去重保留顺序 ----------
+            const unique = [];
+            const seen = new Set();
+            for (const num of orderedMonths) {
+                if (!seen.has(num)) {
+                    unique.push(num);
+                    seen.add(num);
+                }
+            }
+
+            return hasCrossYear ? unique : unique.sort((a, b) => a - b);
+        }
+
+        function parsePhenologyText(text) {
+            if (!text || typeof text !== 'string') return [];
+
+            // ---------- 第1步：分割条目 ----------
+            // 先按换行、分号、逗号分割（英文或中文）
+            const rawParts = text.split(/[；;，,|\n]+/).map(s => s.trim()).filter(Boolean);
+
+            // 合并不含“期”的片段到前一个（保护复杂描述）
+            const mergedParts = [];
+            for (const part of rawParts) {
+                if (!part) continue;
+                if (mergedParts.length === 0) {
+                    mergedParts.push(part);
+                } else {
+                    // 如果当前片段含有“期”字（花期、果期、物候期等），作为新条目
+                    if (/期/.test(part)) {
+                        mergedParts.push(part);
+                    } else {
+                        // 否则合并到前一个，用逗号连接
+                        mergedParts[mergedParts.length - 1] += '，' + part;
+                    }
+                }
+            }
+
+            // ---------- 第2步：解析每个条目 ----------
+            const result = [];
+            const labelRegex = /^(花果期|花期|果期|萌芽期|结实期|生长期|休眠期|繁殖期|发生期|活动期|羽化期|迁飞期|迁徙期|春迁期|秋迁期|越冬期|子实体期|物候期|物候|花|果)/; // 可扩展
+
+            for (let entry of mergedParts) {
+                entry = entry.trim();
+                if (!entry) continue;
+
+                let label = '';
+                let value = '';
+
+                // 尝试匹配标签（开头）
+                const match = entry.match(labelRegex);
+                if (match) {
+                    label = match[1];
+                    value = entry.slice(match[0].length).trim();
+                } else {
+                    // 没有标签，整段作为 value，label 设为“物候”
+                    label = '物候';
+                    value = entry;
+                }
+
+                // ---------- 第3步：清理 value ----------
+                // 去除末尾标点（。；；，、等）
+                value = value.replace(/[。；;，,、]+$/, '');
+
+                // 如果 value 为空，但原 entry 有内容，可能全为标签，保留标签作为 value
+                if (!value) {
+                    // 例如“花期”单独一行，则 value 设为空，months 为空
+                }
+
+                // ---------- 第4步：解析月份 ----------
+                const months = parsePhenologyMonths(value);
+
+                // 即使 months 为空（如“不详”），也保留条目
+                result.push({
+                    label: label,
+                    value: value,
+                    months: months
+                });
+            }
+
+            return result;
+        }
+
+        // rank&modifier显示正体
+        function formatScientificNameWithAuthor(scientificName, author) {
+            if (!scientificName) return '';
+            const tokens = scientificName.split(/\s+/);
+            const ranks = new Set([
+                'subsp.', 'ssp.', 'var.', 'f.', 'forma', 'subvar.',
+                'subsp', 'ssp', 'var', 'f', 'forma', 'subvar'
+            ]);
+            const modifiers = new Set(['cf.', 'aff.', 'sp.', 'cf', 'aff', 'sp', '?']);
+            const connectives = new Set(['ex', 'et', '&']);  // 新增连接词
+
+            function isRank(token) {
+                const lower = token.toLowerCase();
+                const clean = lower.replace(/\.$/, '');
+                return ranks.has(lower) || ranks.has(clean);
+            }
+            function isModifier(token) {
+                const lower = token.toLowerCase();
+                const clean = lower.replace(/\.$/, '');
+                return modifiers.has(lower) || modifiers.has(clean);
+            }
+            function isAuthorLike(token) {
+                return /^[A-Z]/.test(token) || /[()]/.test(token) || /^\d/.test(token);
+            }
+            function isConnective(token) {
+                return connectives.has(token.toLowerCase());
+            }
+
+            // 从右向左提取命名人起始索引（包含连接词）
+            function extractAuthorStart(tokens, start, end) {
+                let i = end;
+                while (i >= start) {
+                    const token = tokens[i];
+                    if (isAuthorLike(token) || isConnective(token)) {
+                        i--;
+                    } else {
+                        // 遇到等级词或修饰词 → 停止
+                        if (isRank(token) || isModifier(token)) break;
+                        // 遇到小写且非等级/修饰词 → 可能是种加词，停止
+                        if (/^[a-z]/.test(token) && !isRank(token) && !isModifier(token)) break;
+                        // 其他（标点等）也视为停止
+                        break;
+                    }
+                }
+                return i + 1;
+            }
+
+            // 查找等级词位置
+            let rankIndex = -1;
+            for (let i = 0; i < tokens.length; i++) {
+                if (isRank(tokens[i])) {
+                    rankIndex = i;
+                    break;
+                }
+            }
+
+            const parts = [];
+            if (rankIndex !== -1) {
+                // ----- 存在等级词 -----
+                const beforeRank = tokens.slice(0, rankIndex);
+                const afterRank = tokens.slice(rankIndex + 1);
+                // 提取 beforeRank 中的命名人起始
+                const authorStart = extractAuthorStart(beforeRank, 0, beforeRank.length - 1);
+
+                // 等级词之前：学名部分（斜体）
+                for (let i = 0; i < authorStart; i++) {
+                    const token = beforeRank[i];
+                    if (isRank(token) || isModifier(token)) {
+                        parts.push(token);
+                    } else {
+                        parts.push(`<i>${token}</i>`);
+                    }
+                }
+                // 命名人部分（正体）
+                for (let i = authorStart; i < beforeRank.length; i++) {
+                    parts.push(beforeRank[i]);
+                }
+                // 等级词（正体）
+                parts.push(tokens[rankIndex]);
+                // 等级词之后：种下加词（斜体）及可能的修饰词（正体）
+                for (let i = rankIndex + 1; i < tokens.length; i++) {
+                    const token = tokens[i];
+                    if (isRank(token) || isModifier(token)) {
+                        parts.push(token);
+                    } else {
+                        parts.push(`<i>${token}</i>`);
+                    }
+                }
+            } else {
+                // ----- 无等级词 -----
+                const authorStart = extractAuthorStart(tokens, 0, tokens.length - 1);
+                for (let i = 0; i < authorStart; i++) {
+                    const token = tokens[i];
+                    if (isRank(token) || isModifier(token)) {
+                        parts.push(token);
+                    } else {
+                        parts.push(`<i>${token}</i>`);
+                    }
+                }
+                for (let i = authorStart; i < tokens.length; i++) {
+                    parts.push(tokens[i]);
+                }
+            }
+
+            let html = parts.join(' ');
+            if (author) {
+                html += ' ' + author;
+            }
+            return html;
+        }
+
         // ============================================================
         // 🧪 数据验证函数
         // ============================================================
@@ -3196,21 +4336,22 @@ function initTreeSortable() {
             return { valid: true };
         }
 
-        function validateSpeciesName(parent, commonName, latinName, excludeId) {
+        function validateSpeciesName(parent, commonName, scientificName, excludeId) {
             const cName = commonName.trim();
-            const lName = latinName.trim();
-            if (!cName && !lName) {
-                return { valid: false, message: '⚠️ 请至少填写中文俗名或拉丁学名' };
+            const sName = scientificName.trim();
+            if (!cName && !sName) {
+                return { valid: false, message: '⚠️ 请至少填写中文俗名或学名' };
             }
             if (parent.children) {
                 for (let child of parent.children) {
                     if (child.id === excludeId) continue;
-                    if (child.type === 'species') {
-                        if (cName && child.commonName === cName) {
+                    if (isSpeciesNode(child)) {
+                        const profile = getProfileSafe(child);
+                        if (cName && profile.commonName === cName) {
                             return { valid: false, message: '⚠️ 该中文俗名已存在，请勿重复' };
                         }
-                        if (lName && child.latinName === lName) {
-                            return { valid: false, message: '⚠️ 该拉丁学名已存在，请勿重复' };
+                        if (sName && profile.scientificName === sName) {
+                            return { valid: false, message: '⚠️ 该学名已存在，请勿重复' };
                         }
                     }
                 }
@@ -3224,25 +4365,68 @@ function initTreeSortable() {
 
         function showAddTaxonModal(parent) {
             if (!parent) return;
+            if (isSpeciesNode(parent)) {
+                toast('⚠️ 物种节点不能添加子分类');
+                return;
+            }
             showModal({
                 title: '添加子分类群',
                 fields: [
                     { id: 'name', label: '分类群名称 *', type: 'text', placeholder: '例如：蔷薇科' },
-                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: 'https://example.com/photo.jpg|栖息地照片', rows: 2,
-                        withPaste: true, isImageField: true }
+                    { 
+                        id: 'rank', 
+                        label: '分类阶元', 
+                        type: 'select', 
+                        value: '', 
+                        rankNameField: 'rankName',   // 关联自定义输入框
+                        options: [
+                            { value: '', label: '未设置' },
+                            { value: 'domain', label: '域 Domain' },
+                            { value: 'kingdom', label: '界 Kingdom' },
+                            { value: 'phylum', label: '门 Phylum' },
+                            { value: 'class', label: '纲 Class' },
+                            { value: 'order', label: '目 Order' },
+                            { value: 'family', label: '科 Family' },
+                            { value: 'genus', label: '属 Genus' },
+                            { value: 'custom', label: '其他分类阶元' }
+                        ]
+                    },
+                    { 
+                        id: 'rankName', 
+                        label: '自定义阶元名称', 
+                        type: 'text', 
+                        value: '',
+                        placeholder: '例如：亚属，组，系，复合群，clade …',
+                        hidden: true   // 初始隐藏
+                    },
+                    { 
+                        id: 'photos', 
+                        label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', 
+                        type: 'textarea', 
+                        placeholder: 'https://example.com/photo.jpg|栖息地照片', 
+                        rows: 2, 
+                        withPaste: true, 
+                        isImageField: true 
+                    }
                 ],
                 onSave: function(data) {
                     const result = validateTaxonName(parent, data.name);
                     if (!result.valid) { toast(result.message); return false; }
                     const photos = parseImageField(data.photos);
+                    const rank = data.rank || '';
+                    // 仅当 rank 为 'custom' 时保存 rankName，否则清空
+                    const rankName = (rank === 'custom') ? data.rankName.trim() : '';
                     const newNode = {
                         id: generateId(),
                         name: data.name.trim(),
+                        rank: rank,
+                        rankName: rankName,
                         type: 'taxon',
                         children: [],
                         photos: photos
                     };
                     if (!parent.children) parent.children = [];
+                    ensureTaxonProfile(newNode)
                     parent.children.push(newNode);
                     saveAndRefresh();
                     toast('✅ 已添加分类群: ' + data.name.trim());
@@ -3259,45 +4443,122 @@ function initTreeSortable() {
             showModal({
                 title: '添加物种',
                 fields: [
-                    { id: 'commonName', label: '中文俗名', type: 'text', placeholder: '例如：玫瑰' },
-                    { id: 'latinName', label: '拉丁学名', type: 'text', placeholder: '例如：Rosa rugosa' },
-                    { id: 'authors', label: '命名人', type: 'text', placeholder: '例如：Thunb.' },
-                    { id: 'distribution', label: '分布', type: 'text', placeholder: '分布范围' },
-                    { id: 'habitat', label: '生境', type: 'text', placeholder: '生境描述' },
-                    { id: 'synonyms', label: '异名（每行一条）', type: 'textarea', placeholder: '例如：Rosa ferox Lawrance', rows: 2 },
+                    // ===== 分组：分类学信息 =====
+                    { type: 'group-start', label: '分类学信息' },
+                    { 
+                        id: 'rank', 
+                        label: '等级', 
+                        type: 'select', 
+                        value: 'species',
+                        options: [
+                            { value: 'species', label: '物种 Species' },
+                            { value: 'subspecies', label: '亚种 Subspecies' },
+                            { value: 'variety', label: '变种 Variety' },
+                            { value: 'form', label: '变型 Form' }
+                        ]
+                    },
+                    { id: 'commonName', label: '中文俗名', type: 'text', placeholder: '例如：香茜' },
+                    { id: 'scientificNameRaw', label: '学名（带命名人）', type: 'text', placeholder: '例如：Carlemannia tetragona Hook. f.' },
+                    { 
+                        id: 'synonyms', 
+                        label: '异名 （格式：异名|链接，每行一条）', 
+                        type: 'textarea', 
+                        placeholder: '例如：Carlemannia henryi H.Lév.|https://example.com', 
+                        rows: 3 
+                    },
+                    { id: 'protologue', label: '原始发表 （格式：文献信息|链接）', type: 'text', placeholder: '例如：The Flora of British India 3(7): 85. 1880.|https://example.com', inline: true },
+                    { id: 'typeInformation', label: '模式信息 （格式：标本信息|链接）', type: 'text', placeholder: '例如：Griffith (Kew Distrib. 2841)|https://example.com', inline: true },
+                    { type: 'group-end' },
+
+                    // ===== 分组：生态与分布 =====
+                    { type: 'group-start', label: '生态与分布' },
+                    { id: 'distribution', label: '分布 （格式：国家（地区1，地区2，…），各国家间用换行、逗号或分号分隔）', type: 'textarea', placeholder: '例如：中国（云南，西藏）；印度东北部；缅甸；泰国；越南；苏门答腊', rows: 3 },
+                    { id: 'habitat', label: '生境', type: 'text', placeholder: '例如：海拔850-1500米处的密林中，尤以潮湿沟谷常见', inline: true},
+                    {
+                        id: 'phenology',
+                        label: '物候信息',
+                        type: 'textarea',
+                        placeholder: '例如：花期7-9月，果期10-12月',
+                        rows: 1,
+                        inline: true
+                    },
+                    { id: 'localities', label: '点位记录 （格式：坐标|描述，每行一条）', type: 'textarea', placeholder: '例如：22°30′N 101°30′E|云南普洱某县某镇林中水边', rows: 2 },
+                    { type: 'group-end' },
+
+                    // ===== 分组：相册 =====
+                    { type: 'group-start', label: '相册' },
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: '例如：https://example.com/photo.jpg|花序，示小苞片', rows: 3, withPaste: true, isImageField: true },
+                    { type: 'group-end' },
+
+                    // ===== 分组：形态与讨论 =====
+                    { type: 'group-start', label: '形态与讨论' },
                     { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', placeholder: '鉴定特征', rows: 2 },
-                    { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', placeholder: '详细描述', rows: 3 },
+                    { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', placeholder: '详细描述', rows: 8 },
                     { id: 'discussion', label: '讨论（支持Markdown）', type: 'textarea', placeholder: '可记录争议、备注等', rows: 3 },
-                    { id: 'references', label: '参考文献（每行一条）', type: 'textarea', placeholder: '例如：《中国植物志》第37卷 (1985)', rows: 2 }, 
-                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', placeholder: 'https://example.com/photo.jpg|花序，示苞片', rows: 2,
-                        withPaste: true, isImageField: true }
+                    { type: 'group-end' },
+
+                    // ===== 分组：参考文献 =====
+                    { type: 'group-start', label: '参考文献' },
+                    { id: 'references', label: '参考文献 （格式：文献信息|链接，每行一条）', type: 'textarea', placeholder: '例如：中国科学院中国植物志编辑委员会. 中国植物志: 第71卷 第1分册[M]. 北京: 科学出版社|https://example.com', rows: 3 },
+                    { type: 'group-end' }
                 ],
                 onSave: function(data) {
-                    const result = validateSpeciesName(parent, data.commonName, data.latinName);
-                    if (!result.valid) { toast(result.message); return false; }
-                    const photos = parseImageField(data.photos);
+                    const rawInput = data.scientificNameRaw.trim();
+                    const parsed = parseScientificName(rawInput);
                     const commonName = data.commonName.trim();
-                    const latinName = data.latinName.trim();
+
+                    if (!commonName && !parsed.scientificName) {
+                        toast('⚠️ 请至少填写中文俗名或学名');
+                        return false;
+                    }
+
+                    const result = validateSpeciesName(parent, commonName, parsed.scientificName);
+                    if (!result.valid) { toast(result.message); return false; }
+
+                    // 可选提示
+                    if (parsed.confidence === 'low') {
+                        toast('⚠️ 学名格式不常见，请确认是否正确。');
+                    } else if (parsed.confidence === 'medium' && !parsed.parsed) {
+                        toast('ℹ️ 未检测到命名人，将仅保存学名主体。');
+                    }
+
+                    const photos = parseImageField(data.photos);
+                    const id = generateId();
                     const newNode = {
-                        id: generateId(),
-                        name: latinName || commonName,
-                        type: 'species',
-                        authors: data.authors.trim(),
-                        commonName: commonName,
-                        latinName: latinName,
-                        distribution: data.distribution.trim(),
-                        habitat: data.habitat.trim(),
-                        synonyms: data.synonyms.split('\n').filter(s => s.trim()),
-                        diagnosis: data.diagnosis.trim(),
-                        description: data.description.trim(),
-                        discussion: data.discussion.trim(),
-                        photos: photos,
-                        references: data.references.split('\n').filter(s => s.trim()),
+                        id: id,
+                        type: 'taxon',
+                        rank: data.rank,
+                        rankName: '',
+                        name: commonName || parsed.scientificName || '未命名物种',
+                        children: [],
+                        photos: photos
                     };
                     if (!parent.children) parent.children = [];
+
+                    const profile = ensureTaxonProfile(newNode);
+                    profile.scientificNameRaw = rawInput;
+                    profile.scientificName = parsed.scientificName;
+                    profile.author = parsed.author;
+                    profile.commonName = commonName;
+                    profile.distribution = parseDistributionText(data.distribution);
+                    profile.habitat = data.habitat.trim();
+                    profile.phenology = parsePhenologyText(data.phenology);
+                    profile.protologue = parseAnnotatedText(data.protologue);
+                    profile.typeInformation = parseAnnotatedText(data.typeInformation);
+                    profile.references = data.references.split('\n').filter(s => s.trim()).map(parseAnnotatedText);
+                    profile.localities = data.localities.split('\n').filter(s => s.trim()).map(line => {
+                        const parts = line.split('|');
+                        return { coordinate: parts[0]?.trim() || '', description: parts[1]?.trim() || '' };
+                    });
+                    profile.synonyms = data.synonyms.split('\n').filter(s => s.trim()).map(parseAnnotatedText);
+                    profile.diagnosis = data.diagnosis.trim();
+                    profile.description = data.description.trim();
+                    profile.discussion = data.discussion.trim();
+                    profile.updatedAt = Date.now();
+
                     parent.children.push(newNode);
                     saveAndRefresh();
-                    toast('✅ 已添加物种: ' + (commonName || latinName));
+                    toast('✅ 已添加物种: ' + (commonName || parsed.scientificName));
                     expandPath(parent.id);
                     selectNode(parent);
                     showTaxonContent(parent);
@@ -3335,9 +4596,13 @@ function initTreeSortable() {
 
         function openEditor(node) {
             if (!node) return;
-            if (node.type === 'taxon') editTaxon(node);
-            else if (node.type === 'species') editSpecies(node);
-            else if (node.type === 'content') editContent(node);
+            if (node.type === 'content') {
+                editContent(node);
+            } else if (isSpeciesNode(node)) {
+                editSpecies(node);
+            } else {
+                editTaxon(node);
+            }
         }
 
         function editTaxon(node) {
@@ -3351,13 +4616,50 @@ function initTreeSortable() {
                 title: '编辑分类群',
                 fields: [
                     { id: 'name', label: '分类群名称 *', type: 'text', value: node.name || '' },
-                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', value: photosStr, rows: 2,
-                        withPaste: true, isImageField: true }
+                    { 
+                        id: 'rank', 
+                        label: '分类阶元', 
+                        type: 'select', 
+                        value: node.rank || '', 
+                        rankNameField: 'rankName',
+                        options: [
+                            { value: '', label: '未设置' },
+                            { value: 'domain', label: '域 Domain' },
+                            { value: 'kingdom', label: '界 Kingdom' },
+                            { value: 'phylum', label: '门 Phylum' },
+                            { value: 'class', label: '纲 Class' },
+                            { value: 'order', label: '目 Order' },
+                            { value: 'family', label: '科 Family' },
+                            { value: 'genus', label: '属 Genus' },
+                            { value: 'custom', label: '其他分类阶元' }
+                        ]
+                    },
+                    { 
+                        id: 'rankName', 
+                        label: '自定义阶元名称', 
+                        type: 'text', 
+                        value: node.rankName || '',
+                        placeholder: '例如：亚属，组，系，复合群，clade …',
+                        hidden: true
+                    },
+                    { 
+                        id: 'photos', 
+                        label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', 
+                        type: 'textarea', 
+                        value: photosStr, 
+                        rows: 2, 
+                        withPaste: true, 
+                        isImageField: true 
+                    }
                 ],
                 onSave: function(data) {
                     const result = validateTaxonName(parent, data.name, node.id);
                     if (!result.valid) { toast(result.message); return false; }
+                    const rank = data.rank || '';
+                    const rankName = (rank === 'custom') ? data.rankName.trim() : '';
                     node.name = data.name.trim();
+                    node.rank = rank;
+                    node.rankName = rankName;
                     node.photos = parseImageField(data.photos);
                     saveAndRefresh();
                     toast('✅ 已更新分类群');
@@ -3371,45 +4673,188 @@ function initTreeSortable() {
         function editSpecies(node) {
             const parent = findParent(treeData, node.id);
             if (!parent) { toast('❌ 找不到父节点'); return; }
+
+            const profile = getProfileSafe(node);
+
+            // 字段初始值
+            const commonName = profile.commonName || node.commonName || '';
+            const distribution = profile.distribution || node.distribution || '';
+            const habitat = profile.habitat || node.habitat || '';
+            const synonyms = (profile.synonyms && profile.synonyms.length) ? profile.synonyms : (node.synonyms || []);
+            const diagnosis = profile.diagnosis || node.diagnosis || '';
+            const description = profile.description || node.description || '';
+            const discussion = profile.discussion || node.discussion || '';
+            const references = (profile.references && profile.references.length) ? profile.references : (node.references || []);
+
+            // scientificNameRaw 优先 node（旧数据），否则组合
+            let rawDisplay = node.scientificNameRaw || 
+                            ((profile.scientificName || node.scientificName || '') + 
+                            (profile.author || node.author ? ' ' + (profile.author || node.author) : ''));
+
             const photosStr = (node.photos || []).map(p => {
                 if (p.isImageRef && p.uuid) return `[img:${p.uuid}]|${p.caption || ''}`;
                 return p.src + '|' + (p.caption || '');
             }).join('\n');
+
             showModal({
                 title: '编辑物种',
                 fields: [
-                    { id: 'commonName', label: '中文俗名', type: 'text', value: node.commonName || '' },
-                    { id: 'latinName', label: '拉丁学名', type: 'text', value: node.latinName || '' },
-                    { id: 'authors', label: '命名人', type: 'text', value: node.authors || '' },
-                    { id: 'distribution', label: '分布', type: 'text', value: node.distribution || '' },
-                    { id: 'habitat', label: '生境', type: 'text', value: node.habitat || '' },
-                    { id: 'synonyms', label: '异名（每行一条）', type: 'textarea', value: (node.synonyms || []).join('\n'),
-                        rows: 2 },
-                    { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', value: node.diagnosis || '', rows: 2 },
-                    { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', value: node.description || '',
-                        rows: 3 },
-                    { id: 'discussion', label: '讨论（支持Markdown）', type: 'textarea', value: node.discussion || '', rows: 3 },
-                    { id: 'references', label: '参考文献（每行一条）', type: 'textarea', value: (node.references || [])
-                            .join('\n'), rows: 2 },
-                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', value: photosStr, rows: 2,
-                        withPaste: true, isImageField: true }
+                    // ===== 分组：分类学信息 =====
+                    { type: 'group-start', label: '分类学信息' },
+                    { 
+                        id: 'rank', 
+                        label: '等级', 
+                        type: 'select', 
+                        value: node.rank || 'species',
+                        options: [
+                            { value: 'species', label: '种 Species' },
+                            { value: 'subspecies', label: '亚种 Subspecies' },
+                            { value: 'variety', label: '变种 Variety' },
+                            { value: 'form', label: '变型 Form' }
+                        ]
+                    },
+                    { id: 'commonName', label: '中文俗名', type: 'text', value: commonName },
+                    { id: 'scientificNameRaw', label: '学名（带命名人）', type: 'text', value: rawDisplay },
+                    { 
+                        id: 'synonyms', 
+                        label: '异名 （格式：异名|链接，每行一条）', 
+                        type: 'textarea', 
+                        value: (profile.synonyms || []).map(s => 
+                            s.text + (s.link ? '|' + s.link : '')
+                        ).join('\n'), 
+                        rows: 3 
+                    },
+                    { 
+                        id: 'protologue', 
+                        label: '原始发表 （格式：文献信息|链接）', 
+                        type: 'text', 
+                        value: (profile.protologue?.text || '') + (profile.protologue?.link ? '|' + profile.protologue.link : ''), 
+                        inline: true
+                    },
+                    { 
+                        id: 'typeInformation', 
+                        label: '模式信息 （格式：标本信息|链接）', 
+                        type: 'text', 
+                        value: (profile.typeInformation?.text || '') + (profile.typeInformation?.link ? '|' + profile.typeInformation.link : ''),
+                        inline: true
+                    },
+                    { type: 'group-end' },
+
+                    // ===== 分组：生态与分布 =====
+                    { type: 'group-start', label: '生态与分布' },
+                    { 
+                        id: 'distribution', 
+                        label: '分布 （格式：国家（地区1，地区2，…），各国家间用换行、逗号或分号分隔）', 
+                        type: 'textarea', 
+                        value: (profile.distribution || []).map(d => 
+                            d.areas.length ? `${d.country}（${d.areas.join('，')}）` : d.country
+                        ).join('；') 
+                    },
+                    { id: 'habitat', label: '生境', type: 'text', value: habitat, inline: true },
+                    { 
+                        id: 'phenology', 
+                        label: '物候信息', 
+                        type: 'textarea', 
+                        value: (profile.phenology || []).map(p => `${p.label}${p.value}`).join('，'), 
+                        rows: 1,
+                        inline: true
+                    },
+                    { 
+                        id: 'localities', 
+                        label: '点位记录 （格式：坐标|描述，每行一条）', 
+                        type: 'textarea', 
+                        value: (profile.localities || []).map(l => 
+                            `${l.coordinate}|${l.description}`
+                        ).join('\n'), 
+                        rows: 2 
+                    },
+                    { type: 'group-end' },
+
+                    // ===== 分组：相册 =====
+                    { type: 'group-start', label: '相册' },
+                    { id: 'photos', label: '图片（每行一张，格式：URL|说明 或 [img:uuid]|说明）', type: 'textarea', value: photosStr, rows: 3, withPaste: true, isImageField: true },
+                    { type: 'group-end' },
+
+                    // ===== 分组：形态与讨论 =====
+                    { type: 'group-start', label: '形态与讨论' },
+                    { id: 'diagnosis', label: '鉴定要点（支持Markdown）', type: 'textarea', value: diagnosis, rows: 2 },
+                    { id: 'description', label: '物种描述（支持Markdown）', type: 'textarea', value: description, rows: 8 },
+                    { id: 'discussion', label: '讨论（支持Markdown）', type: 'textarea', value: discussion, rows: 3 },
+                    { type: 'group-end' },
+
+                    // ===== 分组：参考文献 =====
+                    { type: 'group-start', label: '参考文献' },
+                    { 
+                        id: 'references', 
+                        label: '参考文献 （格式：文献信息|链接，每行一条）', 
+                        type: 'textarea', 
+                        value: (profile.references || []).map(r => 
+                            r.text + (r.link ? '|' + r.link : '')
+                        ).join('\n'), 
+                        rows: 3 
+                    },
+                    { type: 'group-end' }
                 ],
                 onSave: function(data) {
-                    const result = validateSpeciesName(parent, data.commonName, data.latinName, node.id);
+                    const rawInput = data.scientificNameRaw.trim();
+                    const parsed = parseScientificName(rawInput);
+                    const commonName = data.commonName.trim();
+
+                    if (!commonName && !parsed.scientificName) {
+                        toast('⚠️ 请至少填写中文俗名或学名');
+                        return false;
+                    }
+
+                    // 唯一性检查
+                    const result = validateSpeciesName(parent, commonName, parsed.scientificName, node.id);
                     if (!result.valid) { toast(result.message); return false; }
-                    node.commonName = data.commonName.trim();
-                    node.latinName = data.latinName.trim();
-                    node.authors = data.authors.trim();
-                    node.distribution = data.distribution.trim();
-                    node.habitat = data.habitat.trim();
-                    node.synonyms = data.synonyms.split('\n').filter(s => s.trim());
-                    node.diagnosis = data.diagnosis.trim();
-                    node.description = data.description.trim();
-                    node.discussion = data.discussion.trim();
-                    node.references = data.references.split('\n').filter(s => s.trim());
+
+                    // 更新树结构字段
+                    node.rank = data.rank;
+                    node.rankName = '';
                     node.photos = parseImageField(data.photos);
-                    node.name = node.latinName || node.commonName || '未命名物种';
-                    saveAndRefresh();
+                    node.name = commonName || parsed.scientificName || '未命名物种';
+
+                    // 写入 profile
+                    const profile = ensureTaxonProfile(node);
+                    profile.scientificNameRaw = rawInput;
+                    profile.scientificName = parsed.scientificName;
+                    profile.author = parsed.author;
+                    profile.commonName = commonName;
+                    profile.distribution = parseDistributionText(data.distribution);
+                    profile.habitat = data.habitat.trim();
+                    profile.phenology = parsePhenologyText(data.phenology);
+                    profile.protologue = parseAnnotatedText(data.protologue);
+                    profile.typeInformation = parseAnnotatedText(data.typeInformation);
+                    profile.references = data.references.split('\n').filter(s => s.trim()).map(parseAnnotatedText);
+                    profile.localities = data.localities.split('\n').filter(s => s.trim()).map(line => {
+                        const parts = line.split('|');
+                        return { coordinate: parts[0]?.trim() || '', description: parts[1]?.trim() || '' };
+                    });
+                    profile.synonyms = data.synonyms.split('\n').filter(s => s.trim()).map(parseAnnotatedText);
+                    profile.diagnosis = data.diagnosis.trim();
+                    profile.description = data.description.trim();
+                    profile.discussion = data.discussion.trim();
+                    profile.updatedAt = Date.now();
+
+                    // 清理旧字段
+                    if (node.scientificNameRaw !== undefined) {
+                        delete node.scientificNameRaw;
+                        delete node.scientificName;
+                        delete node.author;
+                        delete node.commonName;
+                        delete node.distribution;
+                        delete node.habitat;
+                        delete node.synonyms;
+                        delete node.diagnosis;
+                        delete node.description;
+                        delete node.discussion;
+                        delete node.references;
+                    }
+
+                    node.name = commonName || parsed.scientificName || '未命名物种';
+
+                    saveData();
                     toast('✅ 已更新物种');
                     if (selectedNode) showTaxonContent(selectedNode);
                     return true;
@@ -3464,13 +4909,18 @@ function initTreeSortable() {
             const name = getDisplayName(node);
             if (!confirm(`确定要删除「${name}」及其所有子项吗？\n（关联的图片也会被删除）`)) return;
 
+            // 删除图片
             const uuids = collectAllPhotoUUIDs(node);
             if (uuids.length > 0) {
                 Promise.all(uuids.map(uuid => deleteImageFromDB(uuid).catch(() => {})))
-                    .then(() => {
-                        console.log(`🗑 已删除 ${uuids.length} 张关联图片`);
-                    })
+                    .then(() => console.log(`🗑 已删除 ${uuids.length} 张关联图片`))
                     .catch(() => {});
+            }
+
+            // 删除所有节点的 profile
+            const allIds = collectAllNodeIds(node);
+            for (let id of allIds) {
+                delete taxonProfiles[id];
             }
 
             parent.children = parent.children.filter(c => c.id !== nodeId);
@@ -3480,6 +4930,7 @@ function initTreeSortable() {
                 showTaxonContent(parent); } else if (selectedNode) { showTaxonContent(selectedNode); } else { showTaxonContent(
                     treeData); }
         }
+
 
         function closeSpeciesModal() {
             document.getElementById('speciesModal').classList.remove('active');
@@ -3494,115 +4945,278 @@ function initTreeSortable() {
             const modal = document.getElementById('speciesModal');
             const body = document.getElementById('speciesDetailBody');
 
-            const latin = node.latinName || '';          // 只取拉丁学名
-            const authorHTML = node.authors ? ' <span style="font-weight:400;color:#888;">' + node.authors + '</span>' : '';
-            const displayLatin = latin ? `<i>${latin}</i>` : (node.name || '');  // 有拉丁名就斜体，否则普通显示
+            const profile = getProfileSafe(node);
 
-            let infoItems = [];
-            if (node.distribution) infoItems.push({ label: '分布', value: node.distribution });
-            if (node.habitat) infoItems.push({ label: '生境', value: node.habitat });
+            const sciName = profile.scientificName || node.scientificName || '';
+            const author = profile.author || node.author || '';
+            const commonName = profile.commonName || node.commonName || '';
+            const displayName = formatScientificNameWithAuthor(sciName, author);
 
-            let synonymHtml = '';
-            if (node.synonyms && node.synonyms.length) {
-                synonymHtml = `
-                    <div class="item synonym-grid-item">
-                        <div class="synonym-section">
-                            <div class="synonym-header">
-                                <span>异名</span>
-                                <span class="synonym-count">(${node.synonyms.length})</span>
-                                <span class="collapse-icon">›</span>
-                            </div>
-                            <!-- 注意：移除 open 类，默认折叠 -->
-                            <div class="synonym-content">
-                                <ul class="synonym-list">
-                                    ${node.synonyms.map(s => `<li class="synonym-item">${s}</li>`).join('')}
-                                </ul>
+            // ===== 辅助：判断字段是否有内容 =====
+            function hasContent(val) {
+                if (val === undefined || val === null) return false;
+                if (typeof val === 'string') return val.trim().length > 0;
+                if (Array.isArray(val)) return val.length > 0;
+                if (typeof val === 'object') {
+                    if (val.text && val.text.trim()) return true;
+                    if (val.link && val.link.trim()) return true;
+                    return false;
+                }
+                return !!val;
+            }
+
+            // ===== 1. 分类学信息 =====
+            const synonyms = (profile.synonyms && profile.synonyms.length) ? profile.synonyms : (node.synonyms || []);
+            const protologue = profile.protologue || { text: '', link: '' };
+            const typeInfo = profile.typeInformation || { text: '', link: '' };
+
+            const hasSynonym = synonyms.length > 0;
+            const hasProtologue = hasContent(protologue.text) || hasContent(protologue.link);
+            const hasTypeInfo = hasContent(typeInfo.text) || hasContent(typeInfo.link);
+            const hasTaxonomyInfo = hasSynonym || hasProtologue || hasTypeInfo;
+
+            let taxonomyHTML = '';
+            if (hasTaxonomyInfo) {
+                let items = '';
+
+                // 异名（跨两列，带折叠）
+                if (hasSynonym) {
+                    const synonymListHtml = synonyms.map(s => {
+                        let textHtml = '';
+                        if (s.text && s.text.trim()) {
+                            const parsed = parseScientificName(s.text);
+                            textHtml = formatScientificNameWithAuthor(parsed.scientificName, parsed.author);
+                            // 若解析后为空，则回退到原文本（避免空白）
+                            if (!textHtml) textHtml = s.text;
+                        } else {
+                            textHtml = s.text || '';
+                        }
+                        // 若有链接，用 <a> 包裹
+                        if (s.link) {
+                            textHtml = `<a href="${s.link}" target="_blank" rel="noopener noreferrer">${textHtml}</a>`;
+                        }
+                        return `<li class="synonym-item">${textHtml}</li>`;
+                    }).join('');
+                    items += `
+                        <div class="item synonym-grid-item">
+                            <div class="synonym-section">
+                                <div class="synonym-header">
+                                    <span>异名</span>
+                                    <span class="synonym-count">(${synonyms.length})</span>
+                                    <span class="collapse-icon">›</span>
+                                </div>
+                                <div class="synonym-content">
+                                    <ul class="synonym-list">${synonymListHtml}</ul>
+                                </div>
                             </div>
                         </div>
+                    `;
+                }
+
+                // 原始发表
+                if (hasProtologue) {
+                    items += `<div class="item"><strong>原始发表</strong><span>${renderAnnotatedText(protologue)}</span></div>`;
+                }
+
+                // 模式信息
+                if (hasTypeInfo) {
+                    items += `<div class="item"><strong>模式信息</strong><span>${renderAnnotatedText(typeInfo)}</span></div>`;
+                }
+
+                taxonomyHTML = `
+                    <div class="detail-section">
+                        <h2 class="detail-section-title">分类学信息</h2>
+                        <div class="detail-grid">${items}</div>
                     </div>
                 `;
             }
 
-            let infoGrid = '';
-            if (infoItems.length || synonymHtml) {
-                let itemsHtml = infoItems.map(item =>
-                    `<div class="item"><strong>${item.label}</strong><span>${item.value}</span></div>`
-                ).join('');
-                if (synonymHtml) itemsHtml += synonymHtml;
-                infoGrid = `<div class="detail-grid">${itemsHtml}</div>`;
+            // ===== 2. 生态与分布 =====
+            const distribution = profile.distribution || [];
+            const habitat = profile.habitat || node.habitat || '';
+            const phenologyItems = profile.phenology || [];
+            const localities = profile.localities || [];
+
+            const hasDist = distribution.length > 0;
+            const hasHabitat = hasContent(habitat);
+            const hasPheno = phenologyItems.length > 0;
+            const hasLocalities = localities.length > 0;
+            const hasEcoDist = hasDist || hasHabitat || hasPheno || hasLocalities;
+
+            let ecoDistHTML = '';
+            if (hasEcoDist) {
+                let items = '';
+
+                // 分布
+                if (hasDist) {
+                    const distText = distribution.map(d =>
+                        d.areas.length ? `${d.country}（${d.areas.join('，')}）` : d.country
+                    ).join('；');
+                    items += `<div class="item"><strong>分布</strong><span>${distText}</span></div>`;
+                }
+
+                // 生境
+                if (hasHabitat) {
+                    items += `<div class="item"><strong>生境</strong><span>${habitat}</span></div>`;
+                }
+
+                // 物候（独立区块，不在 grid 内）
+                let phenoStripHTML = '';
+                if (hasPheno) {
+                    for (const item of phenologyItems) {
+                        const label = item.label || '物候';
+                        const value = item.value || '';
+                        const months = item.months || [];
+                        let stripHTML = '';
+                        if (months.length > 0) {
+                            const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+                            const bars = monthNames.map((name, idx) => {
+                                const isActive = months.includes(idx + 1);
+                                return `<span class="pheno-month ${isActive ? 'active' : ''}">${name}</span>`;
+                            }).join('');
+                            stripHTML = `<div class="pheno-strip">${bars}</div>`;
+                        } else {
+                            stripHTML = `<div class="pheno-strip-empty">（无月份数据）</div>`;
+                        }
+                        phenoStripHTML += `
+                            <div class="pheno-item">
+                                <div class="pheno-label"><strong>${label}</strong> ${value}</div>
+                                ${stripHTML}
+                            </div>
+                        `;
+                    }
+                }
+
+                // 点位记录
+                if (hasLocalities) {
+                    const locItems = localities.map(l => {
+                        const text = `${l.coordinate}${l.description ? ' - ' + l.description : ''}`;
+                        return `<li class="synonym-item">${text}</li>`;
+                    }).join('');
+                    items += `
+                        <div class="item synonym-grid-item">
+                            <div class="synonym-section">
+                                <div class="synonym-header">
+                                    <span>点位记录</span>
+                                    <span class="synonym-count">(${localities.length})</span>
+                                    <span class="collapse-icon">›</span>
+                                </div>
+                                <div class="synonym-content">
+                                    <ul class="synonym-list">${locItems}</ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                ecoDistHTML = `
+                    <div class="detail-section">
+                        <h2 class="detail-section-title">生态与分布</h2>
+                        ${items ? `<div class="detail-grid">${items}</div>` : ''}
+                        ${phenoStripHTML}
+                    </div>
+                `;
             }
 
+            // ===== 3. 相册 =====
             let photoHTML = '';
             if (node.photos && node.photos.length) {
-                photoHTML = '<h3 class="section-title">相册</h3><div class="photo-strip">';
+                let imgs = '';
                 for (let p of node.photos) {
                     const src = p.src || '';
                     const caption = p.caption || '';
                     const isRef = p.isImageRef || false;
                     const uuid = p.uuid || '';
                     if (isRef && uuid) {
-                        photoHTML +=
-                            `<img data-img-uuid="${uuid}" data-caption="${caption}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${caption || '图片'}" />`;
+                        imgs += `<img data-img-uuid="${uuid}" data-caption="${caption}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${caption || '图片'}" />`;
                     } else if (src) {
-                        photoHTML +=
-                            `<img src="${src}" data-src="${src}" data-caption="${caption}" alt="${caption || '图片'}" />`;
+                        imgs += `<img src="${src}" data-src="${src}" data-caption="${caption}" alt="${caption || '图片'}" />`;
                     }
                 }
-                photoHTML += '</div>';
+                if (imgs) {
+                    photoHTML = `
+                        <div class="detail-section">
+                            <h2 class="detail-section-title">相册</h2>
+                            <div class="photo-strip">${imgs}</div>
+                        </div>
+                    `;
+                }
             }
 
-            let descHTML = '';
-            if (node.diagnosis) descHTML +=
-                `<h3 class="section-title">鉴定要点</h3><div class="markdown-body">${marked.parse(node.diagnosis)}</div>`;
-            if (node.description) descHTML +=
-                `<h3 class="section-title">物种描述</h3><div class="markdown-body">${marked.parse(node.description)}</div>`;
-            
-            let discussionHTML = '';
-            if (node.discussion) {
-                discussionHTML = `<h3 class="section-title">讨论</h3><div class="markdown-body">${marked.parse(node.discussion)}</div>`;
+            // ===== 4. 形态与讨论 =====
+            const diagnosis = profile.diagnosis || node.diagnosis || '';
+            const description = profile.description || node.description || '';
+            const discussion = profile.discussion || node.discussion || '';
+
+            const hasDiagnosis = hasContent(diagnosis);
+            const hasDescription = hasContent(description);
+            const hasDiscussion = hasContent(discussion);
+            const hasMorph = hasDiagnosis || hasDescription || hasDiscussion;
+
+            let morphHTML = '';
+            if (hasMorph) {
+                let parts = '';
+                if (hasDiagnosis) {
+                    parts += `<h3 class="section-title">鉴定要点</h3><div class="markdown-body">${renderMarkdown(diagnosis)}</div>`;
+                }
+                if (hasDescription) {
+                    parts += `<h3 class="section-title">物种描述</h3><div class="markdown-body">${renderMarkdown(description)}</div>`;
+                }
+                if (hasDiscussion) {
+                    parts += `<h3 class="section-title">讨论</h3><div class="markdown-body">${renderMarkdown(discussion)}</div>`;
+                }
+                morphHTML = `
+                    <div class="detail-section">
+                        <h2 class="detail-section-title">形态与讨论</h2>
+                        ${parts}
+                    </div>
+                `;
             }
 
+            // ===== 5. 参考文献 =====
+            const references = (profile.references && profile.references.length) ? profile.references : (node.references || []);
             let refHTML = '';
-            if (node.references && node.references.length) {
-                refHTML = '<h3 class="section-title">参考文献</h3><ol class="ref-list">' +
-                    node.references.map(r => `<li>${r}</li>`).join('') +
-                    '</ol>';
+            if (references.length) {
+                const refList = references.map(r => `<li>${renderAnnotatedText(r)}</li>`).join('');
+                refHTML = `
+                    <div class="detail-section">
+                        <h2 class="detail-section-title">参考文献</h2>
+                        <ol class="ref-list">${refList}</ol>
+                    </div>
+                `;
             }
 
-            // 获取面包屑路径（节点数组）
+            // ===== 面包屑 =====
             const pathNodes = getNodePath(node.id);
             let breadcrumbHTML = '';
             if (pathNodes.length > 0) {
                 const crumbs = pathNodes.map((n, index) => {
                     const isLast = index === pathNodes.length - 1;
                     const displayName = getDisplayName(n);
-                    
                     if (isLast) {
-                        // 最后一个：当前节点，不可点击
                         return `<span class="breadcrumb-current">${displayName}</span>`;
                     } else {
-                        // 前面的节点：可点击跳转
                         return `<span class="breadcrumb-link" data-node-id="${n.id}">${displayName}</span>`;
                     }
                 }).join(' › ');
-                
                 breadcrumbHTML = `<div class="breadcrumb">${crumbs}</div>`;
             }
 
+            // ===== 组装 =====
             cleanupBlobURLs(body);
             body.innerHTML = `
                 <div class="modal-header">
-                    <h2>${node.commonName || node.name || '未命名物种'}</h2>
-                    <div class="sub">${displayLatin}${authorHTML}</div>
+                    <h2>${commonName || sciName || node.name || '未命名物种'}</h2>
+                    <div class="sub">${displayName}</div>
                     ${breadcrumbHTML}
                 </div>
                 <div class="modal-body">
-                    ${infoGrid}
+                    ${taxonomyHTML}
+                    ${ecoDistHTML}
                     ${photoHTML}
-                    ${descHTML}
-                    ${discussionHTML}
+                    ${morphHTML}
                     ${refHTML}
-                    ${!photoHTML && !descHTML && !refHTML ? '<p style="color:#999;">该物种暂无详细信息</p>' : ''}
+                    ${!hasTaxonomyInfo && !hasEcoDist && !photoHTML && !hasMorph && !refHTML ? '<p style="color:#999;">该物种暂无详细信息</p>' : ''}
                 </div>
                 <div class="modal-footer">
                     <button class="btn-cancel" onclick="document.getElementById('speciesModal').classList.remove('active')">关闭</button>
@@ -3612,7 +5226,7 @@ function initTreeSortable() {
 
             modal.classList.add('active');
 
-            // 面包屑点击跳转
+            // ===== 面包屑点击跳转 =====
             const breadcrumbLinks = modal.querySelectorAll('.breadcrumb-link');
             breadcrumbLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -3620,21 +5234,18 @@ function initTreeSortable() {
                     const targetId = this.dataset.nodeId;
                     const targetNode = findNodeById(treeData, targetId);
                     if (targetNode) {
-                        // 关闭物种详情（使用封装函数，便于未来扩展）
                         closeSpeciesModal();
-                        // 跳转到目标节点
                         jumpToNode(targetNode);
                     }
                 });
             });
 
-            loadImageRefs(body);
-
-            // 绑定异名折叠事件
+            // ===== 异名折叠 =====
             const synonymHeaders = modal.querySelectorAll('.synonym-header');
             synonymHeaders.forEach(header => {
+                // 默认折叠
                 header.addEventListener('click', function(e) {
-                    const content = this.nextElementSibling; // .synonym-content
+                    const content = this.nextElementSibling;
                     const icon = this.querySelector('.collapse-icon');
                     if (content) {
                         content.classList.toggle('open');
@@ -3643,8 +5254,12 @@ function initTreeSortable() {
                 });
             });
 
+            // ===== 图片点击（灯箱） =====
             modal.removeEventListener('click', modalPhotoClickHandler);
             modal.addEventListener('click', modalPhotoClickHandler);
+
+            // ===== 加载 IndexedDB 图片 =====
+            loadImageRefs(body);
         }
 
         function showContentDetail(node) {
@@ -3654,10 +5269,32 @@ function initTreeSortable() {
                 fields: [],
                 content: `
                 <div style="padding:6px 0;line-height:1.8;">
-                    ${marked.parse(node.html || '')}
+                    ${renderMarkdown(node.html || '')}
                 </div>`,
                 hideFooter: true,
                 allowOverlayClose: true
+            });
+        }
+
+        function bindRankCustomToggle(container) {
+            if (!container) return;
+            const selects = container.querySelectorAll('select[data-rank-name-field]');
+            selects.forEach(select => {
+                const targetId = select.dataset.rankNameField;
+                const targetInput = document.getElementById(targetId);
+                if (!targetInput) return;
+                function toggle() {
+                    if (select.value === 'custom') {
+                        targetInput.style.display = 'block';
+                        targetInput.disabled = false;
+                    } else {
+                        targetInput.style.display = 'none';
+                        targetInput.disabled = true;
+                        targetInput.value = ''; // 清空自定义值
+                    }
+                }
+                select.addEventListener('change', toggle);
+                toggle(); // 初始化
             });
         }
 
@@ -3667,45 +5304,165 @@ function initTreeSortable() {
 
         function showModal(options) {
             const overlay = document.getElementById('genericModal');
-            const body = document.getElementById('modalBody');
 
-            let fieldsHTML = '';
-            if (options.fields) {
-                for (let f of options.fields) {
-                    const val = f.value || '';
-                    const placeholder = f.placeholder || '';
-                    const rows = f.rows || 3;
-                    const withPaste = f.withPaste || false;
-                    const isImageField = f.isImageField || false;
-                    let pasteBtn = '';
-                    if (withPaste) {
-                        pasteBtn = `
-                            <div class="paste-area">
-                                <button class="paste-btn" onclick="pasteImageFromClipboard('modal_${f.id}')">📋 从剪贴板粘贴图片</button>
-                                <span style="font-size:0.75rem;color:#999;">（将自动压缩并存入 IndexedDB）</span>
-                            </div>
-                        `;
-                    }
-                    let imageFieldAttr = isImageField ? ' data-image-field="true"' : '';
-                    if (f.type === 'textarea') {
-                        fieldsHTML += `
-                            <div class="form-group">
-                                <label>${f.label}</label>
-                                <textarea id="modal_${f.id}" placeholder="${placeholder}" rows="${rows}"${imageFieldAttr}>${val}</textarea>
-                                ${pasteBtn}
-                            </div>
-                        `;
-                    } else {
-                        fieldsHTML += `
-                            <div class="form-group">
-                                <label>${f.label}</label>
-                                <input type="text" id="modal_${f.id}" placeholder="${placeholder}" value="${val}" />
-                            </div>
-                        `;
-                    }
+            // 如果旧模态框处于打开状态，尝试关闭（带脏检查）
+            if (overlay && overlay.classList.contains('active')) {
+                tryCloseModal(overlay);
+                // 如果用户取消关闭，则停止创建新模态框
+                if (overlay.classList.contains('active')) {
+                    return;
                 }
             }
 
+            const body = document.getElementById('modalBody');
+
+            // ---------- 辅助：渲染字段 ----------
+            function renderField(f) {
+                const val = f.value || '';
+                const placeholder = f.placeholder || '';
+                const rows = f.rows || 3;
+                const withPaste = f.withPaste || false;
+                const isImageField = f.isImageField || false;
+                let pasteBtn = '';
+                if (withPaste) {
+                    pasteBtn = `
+                        <div class="paste-area">
+                            <button class="paste-btn" onclick="pasteImageFromClipboard('modal_${f.id}')">📋︎ 从剪贴板粘贴图片</button>
+                            <span style="font-size:0.75rem;color:#999;">（将自动压缩并存入 IndexedDB）</span>
+                        </div>
+                    `;
+                }
+                let imageFieldAttr = isImageField ? ' data-image-field="true"' : '';
+                let html = '';
+
+                if (f.type === 'textarea') {
+                    html = `
+                        <div class="form-group">
+                            <label>${f.label}</label>
+                            <textarea id="modal_${f.id}" placeholder="${placeholder}" rows="${rows}"${imageFieldAttr}>${val}</textarea>
+                            ${pasteBtn}
+                        </div>
+                    `;
+                } else if (f.type === 'select') {
+                    let optionsHtml = '';
+                    if (f.options && f.options.length) {
+                        for (let opt of f.options) {
+                            const selected = (opt.value === val) ? 'selected' : '';
+                            optionsHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                        }
+                    }
+                    const rankNameField = f.rankNameField || '';
+                    html = `
+                        <div class="form-group">
+                            <label>${f.label}</label>
+                            <select id="modal_${f.id}" ${rankNameField ? `data-rank-name-field="modal_${rankNameField}"` : ''}>
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    // 普通 text，支持 hidden
+                    const hiddenStyle = f.hidden ? 'display:none;' : '';
+                    const disabledAttr = f.hidden ? 'disabled' : '';
+                    html = `
+                        <div class="form-group">
+                            <label>${f.label}</label>
+                            <input type="text" id="modal_${f.id}" placeholder="${placeholder}" value="${val}" style="${hiddenStyle}" ${disabledAttr} />
+                        </div>
+                    `;
+                }
+                return html;
+            }
+
+            // ---------- 解析字段并分组 ----------
+            function buildHTML(fields) {
+                if (!fields || fields.length === 0) return '';
+
+                // 检查是否有分组标记（group-start）
+                const hasGroups = fields.some(f => f.type === 'group-start' || f.type === 'group-end');
+
+                // ===== 情况1：无分组（平铺字段） =====
+                if (!hasGroups) {
+                    let html = '';
+                    let i = 0;
+                    while (i < fields.length) {
+                        const current = fields[i];
+                        if (current.inline) {
+                            // 收集连续的 inline 字段
+                            const rowFields = [];
+                            while (i < fields.length && fields[i].inline) {
+                                rowFields.push(fields[i]);
+                                i++;
+                            }
+                            if (rowFields.length === 1) {
+                                html += renderField(rowFields[0]);
+                            } else {
+                                html += `<div class="form-row">`;
+                                for (let rf of rowFields) {
+                                    html += renderField(rf);
+                                }
+                                html += `</div>`;
+                            }
+                        } else {
+                            html += renderField(current);
+                            i++;
+                        }
+                    }
+                    return html;
+                }
+
+                // ===== 情况2：有分组（现有逻辑） =====
+                let html = '';
+                let i = 0;
+                while (i < fields.length) {
+                    const f = fields[i];
+                    if (f.type === 'group-start') {
+                        html += `<div class="form-section">`;
+                        html += `<h3 class="form-section-title">${f.label}</h3>`;
+                        i++;
+                        const groupFields = [];
+                        while (i < fields.length && fields[i].type !== 'group-end') {
+                            groupFields.push(fields[i]);
+                            i++;
+                        }
+                        // 渲染组内字段（同样处理 inline）
+                        let j = 0;
+                        while (j < groupFields.length) {
+                            const current = groupFields[j];
+                            if (current.inline) {
+                                const rowFields = [];
+                                while (j < groupFields.length && groupFields[j].inline) {
+                                    rowFields.push(groupFields[j]);
+                                    j++;
+                                }
+                                if (rowFields.length === 1) {
+                                    html += renderField(rowFields[0]);
+                                } else {
+                                    html += `<div class="form-row">`;
+                                    for (let rf of rowFields) {
+                                        html += renderField(rf);
+                                    }
+                                    html += `</div>`;
+                                }
+                            } else {
+                                html += renderField(current);
+                                j++;
+                            }
+                        }
+                        if (i < fields.length && fields[i].type === 'group-end') {
+                            html += `</div>`;
+                            i++;
+                        }
+                    } else {
+                        // 忽略其他非 group-start 顶层（安全保护）
+                        i++;
+                    }
+                }
+                return html;
+            }
+
+            // ---------- 构建最终内容 ----------
+            let fieldsHTML = options.fields ? buildHTML(options.fields) : '';
             let contentHTML = options.content || '';
 
             cleanupBlobURLs(body);
@@ -3720,7 +5477,7 @@ function initTreeSortable() {
                 ${options.hideFooter ? '' : `
                 <div class="modal-footer">
                     <button class="btn-cancel" onclick="tryCloseModal(document.getElementById('genericModal'))">取消</button>
-                    <button class="btn-save" id="modalSaveBtn">💾︎ 保存</button>
+                    <button class="btn-save" id="modalSaveBtn">${options.saveText || '💾︎ 保存'}</button>
                 </div>
                 `}
             `;
@@ -3728,7 +5485,12 @@ function initTreeSortable() {
             overlay.classList.add('active');
             overlay._dirty = false;
 
-            // 给所有输入框绑定 input 事件（检测用户是否修改过内容）
+            // 绑定 rank 自定义切换
+            setTimeout(() => {
+                bindRankCustomToggle(document.getElementById('modalContainer'));
+            }, 50);
+
+            // 绑定输入变化
             body.querySelectorAll('input, textarea, select').forEach(el => {
                 ['input', 'change'].forEach(type => {
                     el.addEventListener(type, function onInput() {
@@ -3737,17 +5499,20 @@ function initTreeSortable() {
                 });
             });
 
+            // 图片排序初始化
             if (!options.hideFooter) {
                 setTimeout(() => {
                     initImageSortable(document.getElementById('modalContainer'));
                 }, 50);
-            };
+            }
 
+            // 保存按钮
             if (!options.hideFooter) {
                 document.getElementById('modalSaveBtn').onclick = function() {
                     const data = {};
                     if (options.fields) {
                         for (let f of options.fields) {
+                            if (f.type === 'group-start' || f.type === 'group-end') continue;
                             const el = document.getElementById('modal_' + f.id);
                             if (el) data[f.id] = el.value;
                         }
@@ -3758,7 +5523,6 @@ function initTreeSortable() {
                             overlay._dirty = false;
                             closeModal();
                         }
-                        // result === false 时不关闭
                     } else {
                         overlay._dirty = false;
                         closeModal();
@@ -3782,19 +5546,19 @@ function initTreeSortable() {
             }
         }
 
-            function tryCloseModal(overlay) {
-                if (!overlay) {
+        function tryCloseModal(overlay) {
+            if (!overlay) {
                     overlay = document.getElementById('genericModal');
-                    if (!overlay || !overlay.classList.contains('active')) return;
-                }
-                if (!overlay._dirty) {
-                    closeModal();
-                    return;
-                }
-                if (confirm('当前修改尚未保存，确定放弃吗？')) {
-                    closeModal();
-                }
+                if (!overlay || !overlay.classList.contains('active')) return;
             }
+            if (!overlay._dirty) {
+                closeModal();
+                return;
+            }
+            if (confirm('当前修改尚未保存，确定放弃吗？')) {
+                closeModal();
+            }
+        }
 
         function closeModal() {
             const overlay = document.getElementById('genericModal');
@@ -3822,12 +5586,11 @@ function initTreeSortable() {
         // ============================================================
 
         function saveData() {
-            // 确保 treeData 中有版本号
             if (treeData) {
                 treeData.version = CURRENT_VERSION;
             }
             localStorage.setItem('taxonomyNotesData', JSON.stringify(treeData));
-            // 不再单独存储 idCounter，使用 rebuildIdCounter 恢复
+            localStorage.setItem('taxonProfiles', JSON.stringify(taxonProfiles));
         }
 
         function loadData() {
@@ -3835,21 +5598,34 @@ function initTreeSortable() {
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    // 确保版本存在，若无则设为 '1.0'，然后迁移
-                    if (!parsed.version) {
-                        parsed.version = '1.0';
-                    }
-                    // 迁移数据（兼容旧版）
+                    if (!parsed.version) parsed.version = '1.0';
                     parsed.version = migrateData(parsed);
                     treeData = parsed;
-                    // 重建 idCounter（不依赖 localStorage）
                     idCounter = rebuildIdCounter(treeData);
-                    return true;
                 } catch (e) {
                     console.warn('数据加载失败，将使用默认数据', e);
+                    return false;
                 }
+            } else {
+                return false;
             }
-            return false;
+
+            const profiles = localStorage.getItem('taxonProfiles');
+            if (profiles) {
+                try {
+                    taxonProfiles = JSON.parse(profiles);
+                } catch (e) {
+                    console.warn('taxonProfiles 损坏，重新创建', e);
+                    taxonProfiles = {};
+                }
+            } else {
+                taxonProfiles = {};
+            }
+
+            ensureAllNodesHaveProfile(treeData);
+            migrateAllProfiles();
+
+            return true;
         }
 
         // ===== 版本迁移系统（P0-1 改进） =====
@@ -3878,25 +5654,89 @@ function initTreeSortable() {
                 node.children ||= [];
                 node.type ||= 'taxon';
 
+                // --- ✅ 第一步：迁移旧物种节点（type === 'species'）为 taxon ---
                 if (node.type === 'species') {
-                    node.commonName ||= '';
-                    node.latinName ||= '';
-                    node.authors ||= '';
-                    node.distribution ||= '';
-                    node.habitat ||= '';
-                    node.synonyms ||= [];
-                    node.diagnosis ||= '';
-                    node.description ||= '';
-                    node.discussion ||= '';
-                    node.references ||= [];
-                }
-                if (node.type === 'content') {
-                    node.html ||= '';
-                }
-                if (node.type === 'taxon') {
-                    node.name ||= '未命名分类群';
+                    // 1. 迁移旧字段 latinName / authors → scientificNameRaw
+                    if (node.latinName || node.authors) {
+                        let combined = (node.latinName || '') + (node.authors ? ' ' + node.authors : '');
+                        if (combined.trim() && !node.scientificNameRaw) {
+                            const parsed = parseScientificName(combined);
+                            node.scientificNameRaw = combined.trim();
+                            node.scientificName = parsed.scientificName;
+                            node.author = parsed.author;
+                        }
+                        delete node.latinName;
+                        delete node.authors;
+                    }
+
+                    // 2. 确保所有物种特有字段存在
+                    node.scientificNameRaw = node.scientificNameRaw || '';
+                    node.scientificName = node.scientificName || '';
+                    node.author = node.author || '';
+                    node.commonName = node.commonName || '';
+                    node.distribution = node.distribution || '';
+                    node.habitat = node.habitat || '';
+                    node.synonyms = node.synonyms || [];
+                    node.diagnosis = node.diagnosis || '';
+                    node.description = node.description || '';
+                    node.discussion = node.discussion || '';
+                    node.references = node.references || [];
+
+                    // 3. 设置显示名称 name（优先 commonName，其次 scientificName）
+                    node.name = node.commonName || node.scientificName || '未命名物种';
+
+                    // 4. ⭐ 转换为 taxon，设置 rank 为 species（若已有 rank 则保留）
+                    node.type = 'taxon';
+                    node.rank = node.rank || 'species';
+                    node.rankName = '';  // 物种的 rankName 恒为空
                 }
 
+                // --- 第二步：处理 content 节点 ---
+                if (node.type === 'content') {
+                    node.html = node.html || '';
+                }
+
+                // --- 第三步：处理所有 taxon 节点（包括迁移后的物种） ---
+                if (node.type === 'taxon') {
+                    // 确保 name 字段（若为空则补默认值，但不会覆盖已有值）
+                    node.name = node.name || '未命名分类群';
+
+                    // ⭐ 补全：如果节点拥有物种字段但 rank 为空，默认设为 species
+                    if ((node.scientificName || node.commonName) && !node.rank) {
+                        node.rank = 'species';
+                        node.rankName = '';
+                    }
+
+                    // 标准阶元列表（与添加子分类的选项保持一致）
+                    const STANDARD_RANKS = [
+                        'domain', 'kingdom', 'phylum', 'class', 'order',
+                        'family', 'genus', 'species', 'subspecies', 'variety', 'form'
+                    ];
+
+                    // 处理 rank 迁移：非标准值转为 custom，并存入 rankName
+                    if (node.rank !== undefined && node.rank !== null && node.rank !== '') {
+                        if (STANDARD_RANKS.includes(node.rank)) {
+                            node.rankName = '';   // 标准阶元清空 rankName
+                        } else {
+                            // 如果已经是 custom，则保留现有 rankName（不覆盖）
+                            if (node.rank === 'custom') {
+                                // 仅保证 rankName 存在（可为空）
+                                if (node.rankName === undefined || node.rankName === null) {
+                                    node.rankName = '';
+                                }
+                            } else {
+                                // 其他非标准值 → 迁移为 custom，原值存入 rankName
+                                node.rankName = node.rank;
+                                node.rank = 'custom';
+                            }
+                        }
+                    } else {
+                        node.rank = '';
+                        node.rankName = '';
+                    }
+                }
+
+                // --- 递归处理子节点 ---
                 if (node.children) {
                     for (let child of node.children) {
                         walk(child);
@@ -3937,6 +5777,11 @@ function initTreeSortable() {
 
             const reader = new FileReader();
             reader.onload = async function(e) {
+                    // ---------- 确认覆盖提示 ----------
+                if (!confirm('⚠️ 导入JSON将覆盖当前所有数据（包括图片），确定继续吗？')) {
+                    event.target.value = '';   // 清空文件输入，避免再次触发
+                    return;
+                }
                 try {
                     const data = JSON.parse(e.target.result);
                     if (!data.treeData || !data.treeData.id) {
@@ -3944,13 +5789,13 @@ function initTreeSortable() {
                         return;
                     }
 
-                    // ---- 版本迁移 ----
+                    // 版本迁移（treeData）
                     let importedTree = data.treeData;
                     if (!importedTree.version) importedTree.version = '1.0';
                     const newVersion = migrateData(importedTree);
-                    importedTree.version = newVersion; // 更新为最新
+                    importedTree.version = newVersion;
 
-                    // ---- UUID 冲突处理 ----
+                    // UUID 冲突处理
                     let existingUUIDs = new Set();
                     try {
                         const existing = await getAllImagesFromDB();
@@ -3979,7 +5824,7 @@ function initTreeSortable() {
                         toast(`🔄 检测到 ${Object.keys(conflictMap).length} 个UUID冲突，已自动重新生成`);
                     }
 
-                    // ---- 恢复图片到 IndexedDB ----
+                    // 恢复图片到 IndexedDB
                     let savedCount = 0;
                     for (let [uuid, base64] of Object.entries(imageEntries)) {
                         try {
@@ -3993,20 +5838,33 @@ function initTreeSortable() {
                         }
                     }
 
-                    // ---- 更新数据 ----
+                    // ---- 替换 treeData ----
                     treeData = importedTree;
-                    // 重建 idCounter
-                    idCounter = rebuildIdCounter(treeData);
 
+                    // ---- 导入 taxonProfiles（兼容旧版本） ----
+                    taxonProfiles = data.taxonProfiles || {};
+                    ensureAllNodesHaveProfile(treeData);
+                    migrateAllProfiles();
+
+                    // ---- 清理孤儿 profile：仅保留 treeData 中存在的节点 ----
+                    const validIds = new Set();
+                    collectAllNodeIds(treeData).forEach(id => validIds.add(id));
+                    for (const id of Object.keys(taxonProfiles)) {
+                        if (!validIds.has(id)) {
+                            delete taxonProfiles[id];
+                            console.log(`🧹 移除孤立的 profile: ${id}`);
+                        }
+                    }
+
+                    idCounter = rebuildIdCounter(treeData);
                     saveData();
+                    
                     selectedNode = treeData;
                     renderTree();
                     showTaxonContent(treeData);
-
-                    // 更新最后导出时间（导入也算一次安全操作）
                     localStorage.setItem('lastExportTime', Date.now().toString());
 
-                    toast(`✅ 导入成功！版本 ${data.version || '1.0'} → ${importedTree.version}，恢复 ${savedCount} 张图片`);
+                    toast(`✅ 导入成功！版本 ${data.version || '1.0'} → ${importedTree.version}，恢复 ${savedCount} 张本地内嵌图片`);
                 } catch (err) {
                     console.error('导入失败:', err);
                     toast('❌ 导入失败: ' + err.message);
@@ -4020,35 +5878,91 @@ function initTreeSortable() {
         // 📤 导出（统一使用 treeData.version）
         // ============================================================
 
+        // 辅助函数：收集树中所有被引用的图片 UUID
+        function collectAllReferencedUUIDs(root) {
+            const uuids = [];
+            function walk(node) {
+                if (!node) return;
+                // 检查当前节点的 photos
+                if (Array.isArray(node.photos)) {
+                    for (let p of node.photos) {
+                        if (p.isImageRef && p.uuid) {
+                            uuids.push(p.uuid);
+                        }
+                    }
+                }
+                // 递归子节点
+                if (Array.isArray(node.children)) {
+                    for (let child of node.children) {
+                        walk(child);
+                    }
+                }
+            }
+            walk(root);
+            return uuids;
+        }
+
         async function exportData() {
+            // ===== 1. 生成安全的默认文件名（含完整时间） =====
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            const timeStr = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+            const defaultName = `分类学笔记_${dateStr}_${timeStr}`;
+
+            // ===== 2. 弹窗让用户自定义文件名 =====
+            let fileName = prompt('请输入导出的JSON文件名（不含扩展名）：', defaultName);
+            if (fileName === null) return; // 用户取消
+            fileName = fileName.trim() || defaultName;
+            if (!fileName.toLowerCase().endsWith('.json')) {
+                fileName += '.json';
+            }
+
             try {
+                // ===== 3. 收集树中实际引用的 UUID =====
+                const referencedUUIDs = new Set(collectAllReferencedUUIDs(treeData));
+                console.log(`📊 树中引用图片数: ${referencedUUIDs.size}`);
+
+                // ===== 4. 获取 IndexedDB 全部图片，但只导出被引用的 =====
                 const allImages = await getAllImagesFromDB();
                 const imageMap = {};
+                let exportedCount = 0;
+
                 for (let entry of allImages) {
+                    // 只导出在树中被引用的图片
+                    if (!referencedUUIDs.has(entry.id)) {
+                        console.debug(`⏭️ 跳过孤儿图片: ${entry.id}`);
+                        continue;
+                    }
                     try {
                         const base64 = await blobToBase64(entry.blob);
                         imageMap[entry.id] = base64;
+                        exportedCount++;
                     } catch (e) {
                         console.warn('图片转换失败', entry.id, e);
                     }
                 }
-                // 使用 treeData.version 作为导出版本
+
+                // ===== 5. 组装并导出 =====
                 const exportVersion = treeData.version || CURRENT_VERSION;
                 const exportObj = {
                     treeData: treeData,
                     images: imageMap,
+                    taxonProfiles: taxonProfiles,
                     version: exportVersion
                 };
+
                 const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = `分类学笔记_${new Date().toISOString().slice(0,10)}.json`;
+                a.download = fileName;
                 a.click();
 
-                // 记录导出时间
+                // ===== 6. 提示用户 =====
                 localStorage.setItem('lastExportTime', Date.now().toString());
-                toast(`📥 数据已导出（版本 ${exportVersion}，含 ${Object.keys(imageMap).length} 张图片）`);
-
+                // 显示实际导出的图片数（而非 IndexedDB 总数）
+                toast(`📥 数据已导出（版本 ${exportVersion}，含 ${exportedCount} 张本地内嵌图片）`);
+                
                 setTimeout(() => URL.revokeObjectURL(a.href), 1000);
             } catch (err) {
                 console.error(err);
@@ -4064,6 +5978,7 @@ function initTreeSortable() {
             if (!confirm('⚠️ 确定要重置所有数据吗？此操作不可撤销！')) return;
             treeData = deepClone(DEFAULT_DATA);
             treeData.version = CURRENT_VERSION;
+            taxonProfiles = {};
             selectedNode = treeData;
             idCounter = 1000;
             saveData();
@@ -4075,6 +5990,106 @@ function initTreeSortable() {
             renderTree();
             showTaxonContent(treeData);
             toast('🗑 已重置所有数据');
+        }
+
+        function collectUsedUUIDs() {
+            const used = new Set();
+            if (!treeData) return used;
+
+            // 递归遍历树节点
+            function walk(node) {
+                if (!node) return;
+                // 检查 photos 数组
+                if (Array.isArray(node.photos)) {
+                    for (let p of node.photos) {
+                        if (p.isImageRef && p.uuid) {
+                            used.add(p.uuid);
+                        }
+                    }
+                }
+                // 递归子节点
+                if (Array.isArray(node.children)) {
+                    for (let child of node.children) {
+                        walk(child);
+                    }
+                }
+            }
+            walk(treeData);
+
+            // 额外：通过 JSON 字符串正则提取（兜底）
+            const jsonStr = JSON.stringify(treeData);
+            const matches = jsonStr.match(/\[img:([^\]]+)\]/g);
+            if (matches) {
+                for (let m of matches) {
+                    const uuid = m.slice(5, -1);
+                    used.add(uuid);
+                }
+            }
+            return used;
+        }
+
+        async function scanOrphanImages() {
+            try {
+                const used = collectUsedUUIDs();
+                const allEntries = await getAllImagesFromDB();
+                const orphans = allEntries.filter(entry => !used.has(entry.id));
+
+                if (orphans.length === 0) {
+                    toast('✅ 没有孤立图片，数据整洁！');
+                    return;
+                }
+
+                // 计算总大小（近似）
+                let totalSize = 0;
+                for (let entry of orphans) {
+                    totalSize += entry.blob.size;
+                }
+                const sizeMB = (totalSize / (1024 * 1024)).toFixed(1);
+
+                // 构建孤儿列表预览（最多显示 20 条）
+                let listHtml = orphans.slice(0, 20).map(e => 
+                    `<div style="padding:2px 0;font-size:0.9rem;border-bottom:1px solid #eee;">${e.id}</div>`
+                ).join('');
+                if (orphans.length > 20) {
+                    listHtml += `<div style="color:#888;padding:4px 0;">… 还有 ${orphans.length - 20} 个</div>`;
+                }
+
+                showModal({
+                    title: `🧹 清理孤立图片（${orphans.length} 张）`,
+                    content: `
+                        <p>以下图片未被任何节点引用，占用约 <strong>${sizeMB} MB</strong>。</p>
+                        <div style="max-height:200px;overflow-y:auto;background:#f9fafb;padding:6px 10px;border-radius:6px;border:1px solid #e0e4e8;margin:10px 0;">
+                            ${listHtml}
+                        </div>
+                        <p style="color:#666;font-size:0.85rem;">删除后不可恢复，请确认已导出备份。</p>
+                    `,
+                    saveText: '🗑️ 删除全部孤立图片',  // ✅ 自定义按钮文字
+                    onSave: async function() {
+                        // ✅ 二次确认
+                        if (!confirm(`确定删除 ${orphans.length} 张孤立图片吗？此操作不可撤销。`)) {
+                            return false; // 返回 false 阻止模态框关闭
+                        }
+                        // 执行删除
+                        let deleted = 0;
+                        for (let entry of orphans) {
+                            try {
+                                await deleteImageFromDB(entry.id);
+                                deleted++;
+                            } catch (e) {
+                                console.warn('删除失败', entry.id, e);
+                            }
+                        }
+                        toast(`🗑 已删除 ${deleted} 张孤立图片，释放约 ${sizeMB} MB`);
+                        // 可选：记录清理时间
+                        localStorage.setItem('lastImageCleanup', Date.now().toString());
+                        return true; // 允许关闭模态框
+                    }
+                });
+
+            } catch (err) {
+                console.error(err);
+                toast('❌ 扫描失败：' + err.message);
+            }
         }
 
         // ============================================================
@@ -4382,7 +6397,7 @@ function initTreeSortable() {
                 }
             });
 
-            console.info("DHI Taxonomic Notebook v1.1.0");
+            console.info("DHI Taxonomic Notebook v1.2.0");
         }
 
         document.addEventListener('DOMContentLoaded', init);
