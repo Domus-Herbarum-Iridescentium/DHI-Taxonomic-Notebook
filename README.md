@@ -16,8 +16,8 @@ DHI Taxonomic Notebook / 虹蘅馆分类学笔记
 </p>
 
 <p align="center">
-<b> Updating: v1.1.0</b><br>
-Improved Reading Experience & Taxonomic Workflow
+<b> Latest Release: v1.2.0</b><br>
+Taxonomic Data Architecture & Research Workflow Upgrade
 </p>
 
 <p align="center">
@@ -196,13 +196,30 @@ index.html
 - ✅ 拖拽系统优化
 - ✅ 数据迁移与稳定性增强
 
+### v1.2.0
+
+- ✅ 独立分类学数据存储
+- ✅ 统一分类群节点类型
+- ✅ 灵活的分类等级系统
+- ✅ 结构化的分布数据
+- ✅ 物候记录与可视化
+- ✅ 学名解析
+- ✅ 关联参考文献与异名管理
+- ✅ 高级分类检索
+- ✅ 分类单元信息展示优化
+- ✅ JSON 导入/导出及迁移系统优化
+
 ### 后续计划
 
-- ⏳ 分类关系（Relation）管理优化
-- ⏳ 更强的高级搜索与筛选
-- ⏳ 分类单元之间的引用关系
+DHI 分类笔记本仍在持续演进中。后续更新将放缓增加新功能，侧重于提升可靠性和易用性。
+
+- ⏳ 重构核心架构，提高可维护性
+- ⏳ 改进数据一致性与迁移系统
+- ⏳ 增强文献与引文管理
+- ⏳ 优化分类关系处理
+- ⏳ 更强大的搜索与筛选选项
 - ⏳ 更好的图片浏览
-- ⏳ 文献引用管理
+- ⏳ 图像组织与标注功能改进
 
 ## 协议
 
@@ -216,6 +233,7 @@ index.html
 
 - **marked.js** —— Markdown 渲染
 - **Sortable.js** —— 拖拽排序
+- **DOMPurify** —— HTML 内容清理与 XSS 防护
 
 示例图片来源（仅用于演示）：
 
