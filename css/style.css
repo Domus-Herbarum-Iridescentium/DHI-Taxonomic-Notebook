@@ -314,7 +314,7 @@ body.serif-mode {
     max-height: 200px;
     overflow-y: auto;
     display: none;
-    z-index: 100;
+    z-index: 200;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 .search-suggestions.active {
