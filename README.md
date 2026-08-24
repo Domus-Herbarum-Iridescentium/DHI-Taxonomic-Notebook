@@ -8,7 +8,7 @@ DHI Taxonomic Notebook / 虹蘅馆分类学笔记
 
 <p align="center">
 
-  <img alt="Version" src="https://img.shields.io/badge/version-v1.3.0-blue">
+  <img alt="Version" src="https://img.shields.io/badge/version-v1.3.1-blue">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Browser-orange">
   <img alt="Offline" src="https://img.shields.io/badge/offline-Yes-success">
@@ -16,7 +16,7 @@ DHI Taxonomic Notebook / 虹蘅馆分类学笔记
 </p>
 
 <p align="center">
-<b>Latest Release: v1.3.0</b><br>
+<b>Latest Release: v1.3.1</b><br>
 Taxonomic Comparison & Research Workflow Expansion
 </p>
 
@@ -371,7 +371,7 @@ DHI Taxonomic Notebook 是浏览器应用，下载发行版后直接打开 `inde
 
 可以。
 
-v1.3.0 支持 `.xlsx` 和 `.xls` 文件批量导入，可以根据表格字段创建分类单元及对应资料。
+v1.3.1 支持 `.xlsx` 和 `.xls` 文件批量导入，可以根据表格字段创建分类单元及对应资料。
 
 ---
 
